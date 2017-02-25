@@ -104,7 +104,7 @@ def plot_global_stats(r_in):
             
         plt.title('Route Pace vs. Elevation Gain')
         #plt.ylabel('Route')
-        plt.xlabel('sec/km (relative to 5:00)')
+        plt.xlabel('sec/km')
 
         #  add the names of the routes to left side of plot
         #plt.yticks(range(1,max+1), topRnames) 
@@ -112,12 +112,14 @@ def plot_global_stats(r_in):
         estrings = []
         for re in rElevs:
             estrings.append('{:6d} '.format(int(re)))
+        for j in range(0,len(estrings)):
+            t = estrings[j]
+            estrings[j] = topRnames[j] + t.ljust(5)
         plt.yticks(range(1,max+1), estrings) 
 
-        for j in range(0,max):
-            ax1.text(47, j+1 , Nruns[j], size='small')
-        ##   add n figures at right edge
-
+        for j in range(0,len(estrings)):
+            plt.text(370, j+1 , Nruns[j], size='small') 
+        
         plt.show()
         #ax = fig.add_axes()
         #ax.xaxis.set_ticks_position('left')
