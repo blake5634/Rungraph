@@ -414,8 +414,8 @@ while (True):
         d2 = (r.times[n1:])  # rest
         print "size l,d1,d2: ", l, np.size(d1), np.size(d2)
     # plot the histogram
-        for j in range(0, len(d1)):
-            d1[j] -= 300
+        for j in range(0, len(d1)):  # shift times down so relative to 5:00 
+            d1[j] -= 300  # 300 seconds
         for j in range(0, len(d2)):
             d2[j] -= 300 
         n, bins, patches = plt.hist([d2,d1], 50, normed=0,color=colors,stacked=True,alpha=0.5)
@@ -460,7 +460,7 @@ while (True):
 
     
     ##############################################   Plot Pace vs Time
-    plt.figure(2)
+    plt.figure(2) 
     plt.plot(r.dates, r.times)
     if len(r.times) > 20:
         sm = smooth(np.asarray(r.times), 15, 'flat')
@@ -470,4 +470,5 @@ while (True):
     else:
         plt.title('Pace History: '+ r.name)
     plt.grid([1,1])
+    plt.ylim([250,350])
     plt.show()
