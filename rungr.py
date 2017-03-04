@@ -425,7 +425,10 @@ while (True):
         print "Sum: ", np.sum(d1)
         plt.title(r.name + " (recent runs in RED)")
     else: # plain old boring histogram
-        n, bins, patches = plt.hist(r.times, 50, normed=0,color=onecolor,alpha=0.5)
+        d1 = (r.times[:])
+        for j in range(0, len(d1)):  # shift times down so relative to 5:00 
+            d1[j] -= 300  # 300 seconds
+        n, bins, patches = plt.hist(d1, 50, normed=0,color=onecolor,alpha=0.5)
         plt.title(r.name)
     #plt.xlabel('time (sec)')
    
