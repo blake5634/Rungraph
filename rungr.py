@@ -78,16 +78,19 @@ def plot_global_stats(r_in):
         rElevs = []
         #make data into an array
         i = 0
+        NMIN = 10     # only plot if run at least NMIN times
         for r in r3:
-            i += 1 
-            data.append(r.times)
-            #topRnames.append(str(r.plusgain))
-            topRnames.append(r.name)
-            echange = r.plusgain + -1*r.minusgain  # abs value
-            rElevs.append(echange)
-            Nruns.append('n = ' + str(r.n))
-            if i >= max: 
-                break
+            if(r.n >= NMIN):
+                i += 1
+                
+                data.append(r.times)
+                #topRnames.append(str(r.plusgain))
+                topRnames.append(r.name)
+                echange = r.plusgain   # abs value
+                rElevs.append(echange)
+                Nruns.append('n = ' + str(r.n))
+                if i >= max: 
+                    break
         ###########################################################
         #  graph routes as boxplots according to elevation gain
         # 
@@ -117,8 +120,9 @@ def plot_global_stats(r_in):
             estrings[j] = topRnames[j] + t.ljust(5)
         plt.yticks(range(1,max+1), estrings) 
 
+        # add the run count to the right side of the plot
         for j in range(0,len(estrings)):
-            plt.text(370, j+1 , Nruns[j], size='small') 
+            plt.text(350, j+1 , Nruns[j], size='small') 
         
         plt.show()
         #ax = fig.add_axes()
