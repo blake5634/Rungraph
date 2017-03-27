@@ -6,12 +6,56 @@ import operator          # for sorting list of class instances
 import numpy as np
 
 import datetime as dt
+from   dateutil import parser
 
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 
 routes = []
 
+
+def plot_freq(r,N):
+    b1 = 0
+    flag = False
+    freqs = []
+    times = []
+    rbuf = []
+    for j in range(0,N):
+        rbuf.append(parser.parse('01 January 2010'))
+    
+    for r in r:  # run object instances 
+        
+        #   update freq data buffer
+        for j in range(0,N-1):
+            rbuf[j] = rbuf[j+1]
+        rbuf[N-1] = r.date
+        
+        
+        #   compute frequency 
+    
+        deltaT = r.date - rbuf[0] #  dt of last N runs
+        f = 60*60*24*7*N/deltaT.total_seconds()   # seconds
+        
+        #print '>>', f, r.pace
+        
+        freqs.append(f)
+        times.append(r.pace)
+        
+        #   store freq and pace
+        
+    #   plot the graph
+    
+    
+    ##############################################   Plot Pace vs Frequency
+    plt.figure(2) 
+    plt.plot(freqs, times) 
+    plt.title('Pace History vs frequency (last 10 runs in runs /wk): ') 
+    plt.grid([1,1])
+    plt.ylim([250,350])
+    plt.show()
+        
+        
+        
 def plot_global_stats(r_in):       
     data = []
     topRnames = []
@@ -218,9 +262,10 @@ def smooth(x,window_len=11,window='hanning'):
 
 
 
-
-
-
+class run:
+    def __init__(self,date='',pace=0):
+        self.date = date
+        self.pace = pace
 
 class route:
     def __init__(self,string,rnum):
@@ -287,6 +332,7 @@ with open('ActivityLog.csv','rb') as f:
     for row in data:
         nrn += 1
         #print row[0], '---> ' , row[3]
+        #######################   Run Data 
         stdate  = row[0]
         stactiv = row[1]
         stroutenum = row[2]
@@ -312,8 +358,7 @@ with open('ActivityLog.csv','rb') as f:
             secpace = int(stsec)/dist
             pacemin = int(secpace)/60
             pacesec = int(secpace - 60*pacemin)
-         
-            runs.append(secpace)  # store the overall runs
+            runs.append(run(parser.parse(stdate),secpace))  # store the overall runs
             d = float(stdist)
             if (2.8 < d and d < 4.0):
                 runs3k.append(secpace)
@@ -385,9 +430,14 @@ PLOTS = False
 print '\n'    #  
 
 while (True):
-    i = int(input("Select a route to graph: (-1 to quit, 99 for global plots) "))
+    i = int(input("Select a route to graph: (-1 to quit, 80 = freq, 99 for global plots) "))
     if(i<0):
         quit()
+    if(i==80):   #plot pace vs run frequency (runs/wk)
+        WINDOW = 10  # runs
+        r3 = sorted(runs,key=lambda x: x.date, reverse=False)
+        plot_freq(r3,WINDOW)
+            
     if(i==99):
         plot_global_stats(r2)
         continue
