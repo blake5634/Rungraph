@@ -4,12 +4,15 @@ import csv               # file I/O
 import math as m
 import operator          # for sorting list of class instances
 import numpy as np
-
+from scipy import stats
 import datetime as dt
 from   dateutil import parser
 
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
+
+from matplotlib.colors import BoundaryNorm
+from matplotlib.ticker import MaxNLocator
 
 routes = []
 
@@ -43,17 +46,83 @@ def plot_freq(r,N):
         
         #   store freq and pace
         
+    # compute linear regression
+    slope, intercept, r_value, p_value, std_err = stats.linregress(freqs, times)
+    
+    print ' Regression model: '
+    print 'Slope:    ', slope
+    print 'intercept:', intercept
+    print 'r_value:  ', r_value
+    print 'p_value:  ', p_value
+    print 'std_err:  ', std_err
+    
     #   plot the graph
     
     
-    ##############################################   Plot Pace vs Frequency
-    plt.figure(2) 
-    plt.plot(freqs, times) 
-    plt.title('Pace History vs frequency (last 10 runs in runs /wk): ') 
-    plt.grid([1,1])
-    plt.ylim([250,350])
-    plt.show()
+    
+    ###############################################   Plot Pace vs Frequency
+    #plt.figure(2) 
+    #plt.plot(freqs, times) 
+    #plt.title('Pace History vs frequency (last 10 runs in runs /wk): ') 
+    #plt.grid([1,1])
+    #plt.ylim([250,350])
+    #plt.show()
+    
+    ###############################################    Build/Plot Heatmap
+    lims = [0, 4.0, 240, 340]  # xmin, xmax, ymin ymax
+    fmin = lims[0]
+    fmax = lims[1]
+    tmin = lims[2]
+    tmax = lims[3]
+    df = 0.1
+    dt = 1.0
+    
+    nbins = 25
         
+    map = np.zeros((nbins+1,nbins+1))
+    for i in range(0,len(times)):
+        r = -1 + int((times[i] - tmin)/(tmax-tmin) * nbins)
+        c = -1 + int((freqs[i] - fmin)/(fmax-fmin) * nbins)
+        if (r < nbins and c < nbins): 
+            map[r,c] += 1
+
+    [nr,nc] = map.shape 
+    
+    r = np.linspace(tmin, tmax, nr-1)
+    c = np.linspace(fmin, fmax, nc-1)
+    
+    xx, yy = np.meshgrid(c,r)
+    
+    # x and y are bounds, so z should be the value *inside* those bounds.
+    # Therefore, remove the last value from the z array.
+    map = map[:-1, :-1]
+
+    miz = np.amin(map)
+    mxz = np.amax(map)
+    levels = MaxNLocator(nbins=15).tick_values(miz, mxz)
+
+
+    # pick the desired colormap, sensible levels, and define a normalization
+    # instance which takes data values and translates those into levels.
+    cmap = plt.get_cmap('PiYG')
+    cmap = plt.get_cmap('summer')
+    norm = BoundaryNorm(levels, ncolors=cmap.N, clip=True)
+
+    fig, (ax0) = plt.subplots(nrows=1)
+
+    print 'Shapes: '
+    print 'xx:     ', xx.shape
+    print 'yy:     ', yy.shape
+    print 'map:    ', map.shape
+    
+
+    im = ax0.pcolormesh(xx, yy, map, cmap=cmap, norm=norm)
+    fig.colorbar(im, ax=ax0)
+    ax0.set_title('Run Pace vs Runs/week')
+    ax0.set_xlabel('Runs per week ')
+    ax0.set_ylabel('Pace (sec/km)')
+    plt.show()
+              
         
         
 def plot_global_stats(r_in):       
