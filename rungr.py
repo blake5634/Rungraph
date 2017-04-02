@@ -16,6 +16,11 @@ from matplotlib.ticker import MaxNLocator
 
 routes = []
 
+####################################
+#
+#     Make a heatmap plot of run pace vs N runs per week
+#
+#
 
 def plot_freq(r,N):
     b1 = 0
@@ -61,13 +66,7 @@ def plot_freq(r,N):
     
     
     ###############################################   Plot Pace vs Frequency
-    #plt.figure(2) 
-    #plt.plot(freqs, times) 
-    #plt.title('Pace History vs frequency (last 10 runs in runs /wk): ') 
-    #plt.grid([1,1])
-    #plt.ylim([250,350])
-    #plt.show()
-    
+    # 
     ###############################################    Build/Plot Heatmap
     lims = [0, 4.0, 240, 340]  # xmin, xmax, ymin ymax
     fmin = lims[0]
@@ -123,9 +122,14 @@ def plot_freq(r,N):
     ax0.set_ylabel('Pace (sec/km)')
     plt.show()
               
+#
+#######################################################################
+#
+#     Plot some stats over all runs in database
+#
+
         
-        
-def plot_global_stats(r_in):       
+def plot_global_stats(r_in, allruns):       
     data = []
     topRnames = []
     Nruns = []
@@ -135,13 +139,14 @@ def plot_global_stats(r_in):
     #for r in r_in:        
         #for j in range(0,len(r.times)):
             #r.times[j] -= 300  # subtract 5 min from all stats
-    for r in r_in:
+    for r in r_in:    # eg. a list of routes
         i += 1
         dtmp = []
         for j in range(0,len(r.times)):# subtract 5 min from all stats
-            dtmp.append(r.times[j]-300)
+            dtmp.append(r.times[j]-300)  # get all the run times in this route
         data.append(dtmp)
         topRnames.append(r.name)
+        # elevation gain of this route
         echange = r.plusgain + -1*r.minusgain  # abs value
         rElevs.append(echange)
         Nruns.append('n = ' + str(r.n))
@@ -183,6 +188,9 @@ def plot_global_stats(r_in):
         #ax.set_yticklabels(topRnames)
 
     if(PLOTS):
+        ###########################################################
+        #  graph routes as boxplots according to elevation gain
+        # 
         # now sort and reparse according to route elevation gain (up + -dn)
         r3 = sorted(r_in,key=lambda x: x.plusgain , reverse=True)      
         data = []
@@ -204,9 +212,6 @@ def plot_global_stats(r_in):
                 Nruns.append('n = ' + str(r.n))
                 if i >= max: 
                     break
-        ###########################################################
-        #  graph routes as boxplots according to elevation gain
-        # 
         fig, ax1 = plt.subplots(figsize=(14,6))
         plt.subplots_adjust(left=.25)
         rect = fig.patch
@@ -245,14 +250,17 @@ def plot_global_stats(r_in):
 
     if(PLOTS):
         ##############################################################
-        plt.figure(12)    # histogram of ALL run paces
-        n, bins, patches = plt.hist(runs, 50, normed=0, facecolor='blue', alpha=0.5)
+        plt.figure(12)    # histogram of ALL run paces 
+        paces = []
+        for r in allruns:
+            paces.append(r.pace)
+        n, bins, patches = plt.hist(paces, 50, normed=0, facecolor='blue', alpha=0.5)
         plt.xlabel('time (sec)')
-        plt.xlim([270,330])
+        plt.xlim([270,350])
         plt.title('All Runs')
 
         ##############################################################
-        fig, ax2 = plt.subplots()
+        fig, ax2 = plt.subplots()   #  boxplots of 3k vs 5k runs
         data = []
         data.append(runs3k)
         data.append(runs5k)
@@ -341,6 +349,7 @@ class route:
         self.hmin = 4*60 + 30
         self.hmax = 5*60 + 30
         self.name= string
+        self.distance = 0.0
         self.rnum = rnum   # route number (col 2)
         self.n = 0
         self.tot_secp = 0
@@ -438,6 +447,7 @@ with open('ActivityLog.csv','rb') as f:
                 nrt += 1
                 #print "creating class instance" 
                 r = route(stroute,stroutenum)  # create the new route
+                r.distance = float(stdist)
                 rd[stroute] = r
                 routes.append(r)
             
@@ -474,7 +484,7 @@ r2 = sorted(routes,key=lambda x: x.n,reverse=True)
 #print r2
 
 #
-#  Tabular Data
+#  Tabular Data Display
 #
 print '                                                   Pace '
 print '  i     Route                               N     min  avg   max    sd'
@@ -487,16 +497,13 @@ for r in r2:
     r.avg()
     print '{:3d} {:40s}{:3d}   {:4s}  {:4s}  {:4s}  {:4.1f}'.format(i,r.name,int(r.n), minsec(r.min_secp), minsec(r.avg_pace), minsec(r.max_secp), r.sd_pace)  
     i += 1
-
-
-#  convert paces to deltas from 5min / km
-#       and collect some misc info
+ 
 
 PLOTS = False
 
 ##############################################################
 
-print '\n'    #  
+print '\n'    #    Get user input
 
 while (True):
     i = int(input("Select a route to graph: (-1 to quit, 80 = freq, 99 for global plots) "))
@@ -508,7 +515,7 @@ while (True):
         plot_freq(r3,WINDOW)
             
     if(i==99):
-        plot_global_stats(r2)
+        plot_global_stats(r2, runs)
         continue
     if(i+1 > len(r2)):
         print "Selected Invalid run number: ", i
