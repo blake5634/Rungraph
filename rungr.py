@@ -76,7 +76,7 @@ def plot_freq(r,N):
     df = 0.1
     dt = 1.0
     
-    nbins = 25
+    nbins = 35
         
     map = np.zeros((nbins+1,nbins+1))
     for i in range(0,len(times)):
@@ -533,7 +533,7 @@ while (True):
     #total = 0
     l = len(r.times) # times have been converted already to pace-300
     
-    colors = ['green', 'red']
+    colors = ['green', 'tomato', 'r']
     onecolor = ['green']
     pctile = 0.15 # this fraction of most recent runs will be in red
     BIG_NEG_FLAG = -1000000
@@ -542,15 +542,19 @@ while (True):
     if(int(pctile*l) > 1):
         #  NOTE: runs are listed most RECENT first
         n1 = int((pctile)*l)  # first 1-p % runs
-        d1 = (r.times[:n1])  # most recent runs
+        d0 = []
+        d0.append(r.times[0])  # most recent
+        d1 = (r.times[1:n1])  # next most recent runs
         d2 = (r.times[n1:])  # rest
         print "size l,d1,d2: ", l, np.size(d1), np.size(d2)
     # plot the histogram
-        for j in range(0, len(d1)):  # shift times down so relative to 5:00 
+        # shift times down so relative to 300sec = 5:00 min
+        d0[0] -= 300 
+        for j in range(0, len(d1)): 
             d1[j] -= 300  # 300 seconds
         for j in range(0, len(d2)):
             d2[j] -= 300 
-        n, bins, patches = plt.hist([d2,d1], 50, normed=0,color=colors,stacked=True,alpha=0.5)
+        n, bins, patches = plt.hist([d2,d1,d0], 50, normed=0,color=colors,stacked=True,alpha=0.5)
         recent_mean = np.float(np.sum(d1))/n1
         print "Sum: ", np.sum(d1)
         plt.title(r.name + " (recent runs in RED)")
