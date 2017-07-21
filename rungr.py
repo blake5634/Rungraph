@@ -22,7 +22,44 @@ routes = []
 #
 #
 
-def plot_freq(r,N):
+def plot_run_rate(runs, N):  # plot minutes per week vs time
+    ##############################################   Plot Pace vs Time
+    plt.figure(5) 
+    MONDAY = 0
+    startdate = runs[0].date
+    while startdate.weekday() > MONDAY:
+        startdate -= dt.timedelta(days=1)
+    nextdate = startdate + dt.timedelta(days=7)
+    
+    n=0
+    wk_time = 0
+    dates = []
+    times = []
+    for r in runs:
+        if r.date < nextdate:
+            wk_time += r.dur  # add duration of run (sec)
+        else:
+            n += 1
+            print 'Week: ', n, nextdate, wk_time
+            dates.append(n)
+            times.append(wk_time/60)
+            wk_time = 0
+            nextdate = nextdate + dt.timedelta(days=7)    
+    plt.plot(dates, times)
+    if len(times) > 20:
+        sm = smooth(np.asarray(times), 15, 'flat')
+        #print "Data is smoothed ", sm.shape
+        plt.plot(dates, sm.T)
+        plt.title('Weekly Run Minutes with moving avg.')
+    else:
+        plt.title('Weekly Run Minutes')
+    plt.grid([1,1])
+    plt.ylim([0,100])
+    plt.show()
+
+    
+
+def plot_freq(runs,N):
     b1 = 0
     flag = False
     freqs = []
@@ -31,7 +68,7 @@ def plot_freq(r,N):
     for j in range(0,N):
         rbuf.append(parser.parse('01 January 2010'))
     
-    for r in r:  # run object instances 
+    for r in runs:  # run object instances 
         
         #   update freq data buffer
         for j in range(0,N-1):
@@ -340,9 +377,10 @@ def smooth(x,window_len=11,window='hanning'):
 
 
 class run:
-    def __init__(self,date='',pace=0):
+    def __init__(self,date='',pace=0, dur=0):
         self.date = date
         self.pace = pace
+        self.dur = dur
 
 class route:
     def __init__(self,string,rnum):
@@ -397,11 +435,12 @@ def minsec(s):
     return '{:d}:{:02d}'.format(minutes(s),seconds(s))
 
 
-rd = {}
+rd = {} # route dictionary
 
 nv = 0
 nrn = 0
 nrt = 0
+allruns = []
 runs = []
 runs3k = []
 runs5k = []
@@ -421,16 +460,24 @@ with open('ActivityLog.csv','rb') as f:
         
         
         valid = 1
-        if(stactiv == 'Bike'):
-            valid = 0
-        if(stroute == ''): 
+        if(stactiv != '' and stactiv != 'Run'):
             valid = 0
         if(stsec == ''):
             valid = 0
-        if(stdist == ''):
+        if(stdate == 'Date'):
             valid = 0
         
-        if(valid and stdate != "Date"):
+        if(valid): # this list (allruns) includes runs with only time
+            sec = int(stsec)
+            date = parser.parse(stdate)
+            allruns.append(run(date, 300, sec))  # nominal pace
+        
+        if(stdist == ''):
+            valid = 0
+        if(stroute == ''): 
+            valid = 0
+        
+        if(valid):  # this list (runs) is the best data
             nv += 1
             dist = float(stdist)
             secpace = int(stsec)/dist
@@ -506,13 +553,17 @@ PLOTS = False
 print '\n'    #    Get user input
 
 while (True):
-    i = int(input("Select a route to graph: (-1 to quit, 80 = freq, 99 for global plots) "))
+    i = int(input("Select a route to graph: (-1 to quit, 80 = freq, 81 = rate, 99 for global plots) "))
     if(i<0):
         quit()
     if(i==80):   #plot pace vs run frequency (runs/wk)
         WINDOW = 10  # runs
         r3 = sorted(runs,key=lambda x: x.date, reverse=False)
         plot_freq(r3,WINDOW)
+    if(i==81):   #plot minutes of running per week.
+        WINDOW = 10  # runs
+        r3 = sorted(allruns,key=lambda x: x.date, reverse=False)
+        plot_run_rate(r3,WINDOW)
             
     if(i==99):
         plot_global_stats(r2, runs)
