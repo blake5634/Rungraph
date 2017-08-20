@@ -40,7 +40,7 @@ def plot_run_rate(runs, N):  # plot minutes per week vs time
             wk_time += r.dur  # add duration of run (sec)
         else:
             n += 1
-            print 'Week: ', n, nextdate, wk_time
+            #print 'Week: ', n, nextdate, wk_time
             dates.append(n)
             times.append(wk_time/60)
             wk_time = 0
