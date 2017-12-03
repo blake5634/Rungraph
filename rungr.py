@@ -24,13 +24,13 @@ routes = []
 
 def plot_run_rate(runs, N):  # plot minutes per week vs time
     ##############################################   Plot Pace vs Time
-    plt.figure(5) 
+    plt.figure(5)
     MONDAY = 0
     startdate = runs[0].date
     while startdate.weekday() > MONDAY:
         startdate -= dt.timedelta(days=1)
     nextdate = startdate + dt.timedelta(days=7)
-    
+
     n=0
     wk_time = 0
     dates = []
@@ -44,7 +44,7 @@ def plot_run_rate(runs, N):  # plot minutes per week vs time
             dates.append(n)
             times.append(wk_time/60)
             wk_time = 0
-            nextdate = nextdate + dt.timedelta(days=7)    
+            nextdate = nextdate + dt.timedelta(days=7)
     plt.plot(dates, times)
     if len(times) > 20:
         sm = smooth(np.asarray(times), 15, 'flat')
@@ -57,7 +57,7 @@ def plot_run_rate(runs, N):  # plot minutes per week vs time
     plt.ylim([0,100])
     plt.show()
 
-    
+
 
 def plot_freq(runs,N):
     b1 = 0
@@ -67,43 +67,43 @@ def plot_freq(runs,N):
     rbuf = []
     for j in range(0,N):
         rbuf.append(parser.parse('01 January 2010'))
-    
-    for r in runs:  # run object instances 
-        
+
+    for r in runs:  # run object instances
+
         #   update freq data buffer
         for j in range(0,N-1):
             rbuf[j] = rbuf[j+1]
         rbuf[N-1] = r.date
-        
-        
-        #   compute frequency 
-    
+
+
+        #   compute frequency
+
         deltaT = r.date - rbuf[0] #  dt of last N runs
         f = 60*60*24*7*N/deltaT.total_seconds()   # seconds
-        
+
         #print '>>', f, r.pace
-        
+
         freqs.append(f)
         times.append(r.pace)
-        
+
         #   store freq and pace
-        
+
     # compute linear regression
     slope, intercept, r_value, p_value, std_err = stats.linregress(freqs, times)
-    
+
     print ' Regression model: '
     print 'Slope:    ', slope
     print 'intercept:', intercept
     print 'r_value:  ', r_value
     print 'p_value:  ', p_value
     print 'std_err:  ', std_err
-    
+
     #   plot the graph
-    
-    
-    
+
+
+
     ###############################################   Plot Pace vs Frequency
-    # 
+    #
     ###############################################    Build/Plot Heatmap
     lims = [0, 4.0, 240, 340]  # xmin, xmax, ymin ymax
     fmin = lims[0]
@@ -112,23 +112,23 @@ def plot_freq(runs,N):
     tmax = lims[3]
     df = 0.1
     dt = 1.0
-    
+
     nbins = 35
-        
+
     map = np.zeros((nbins+1,nbins+1))
     for i in range(0,len(times)):
         r = -1 + int((times[i] - tmin)/(tmax-tmin) * nbins)
         c = -1 + int((freqs[i] - fmin)/(fmax-fmin) * nbins)
-        if (r < nbins and c < nbins): 
+        if (r < nbins and c < nbins):
             map[r,c] += 1
 
-    [nr,nc] = map.shape 
-    
+    [nr,nc] = map.shape
+
     r = np.linspace(tmin, tmax, nr-1)
     c = np.linspace(fmin, fmax, nc-1)
-    
+
     xx, yy = np.meshgrid(c,r)
-    
+
     # x and y are bounds, so z should be the value *inside* those bounds.
     # Therefore, remove the last value from the z array.
     map = map[:-1, :-1]
@@ -150,7 +150,7 @@ def plot_freq(runs,N):
     print 'xx:     ', xx.shape
     print 'yy:     ', yy.shape
     print 'map:    ', map.shape
-    
+
 
     im = ax0.pcolormesh(xx, yy, map, cmap=cmap, norm=norm)
     fig.colorbar(im, ax=ax0)
@@ -158,22 +158,22 @@ def plot_freq(runs,N):
     ax0.set_xlabel('Runs per week ')
     ax0.set_ylabel('Pace (sec/km)')
     plt.show()
-              
+
 #
 #######################################################################
 #
 #     Plot some stats over all runs in database
 #
 
-        
-def plot_global_stats(r_in, allruns):       
+
+def plot_global_stats(r_in, allruns):
     data = []
     topRnames = []
     Nruns = []
     rElevs = []
     #make data into an array
     i = 0
-    #for r in r_in:        
+    #for r in r_in:
         #for j in range(0,len(r.times)):
             #r.times[j] -= 300  # subtract 5 min from all stats
     for r in r_in:    # eg. a list of routes
@@ -187,7 +187,7 @@ def plot_global_stats(r_in, allruns):
         echange = r.plusgain + -1*r.minusgain  # abs value
         rElevs.append(echange)
         Nruns.append('n = ' + str(r.n))
-        if i >= max: 
+        if i >= max:
             break
 
     PLOTS=True
@@ -202,11 +202,11 @@ def plot_global_stats(r_in, allruns):
         rect.set_facecolor('white')
         ax1.xaxis.grid(True,linestyle='-', which='major', color='lightgrey',alpha=0.5)
 
-        # make boxplots for all the routes    
+        # make boxplots for all the routes
         bp = plt.boxplot(data, notch=True,vert=False ,patch_artist=True)
         for b in bp['boxes']:
             b.set_facecolor('lightblue')
-            
+
         plt.title('Route Pace statistics')
         #plt.ylabel('Route')
         plt.xlabel('sec/km (relative to 5:00)')
@@ -227,9 +227,9 @@ def plot_global_stats(r_in, allruns):
     if(PLOTS):
         ###########################################################
         #  graph routes as boxplots according to elevation gain
-        # 
+        #
         # now sort and reparse according to route elevation gain (up + -dn)
-        r3 = sorted(r_in,key=lambda x: x.plusgain , reverse=True)      
+        r3 = sorted(r_in,key=lambda x: x.plusgain , reverse=True)
         data = []
         topRnames = []
         Nruns = []
@@ -240,14 +240,14 @@ def plot_global_stats(r_in, allruns):
         for r in r3:
             if(r.n >= NMIN):
                 i += 1
-                
+
                 data.append(r.times)
                 #topRnames.append(str(r.plusgain))
                 topRnames.append(r.name)
                 echange = r.plusgain   # abs value
                 rElevs.append(echange)
                 Nruns.append('n = ' + str(r.n))
-                if i >= max: 
+                if i >= max:
                     break
         fig, ax1 = plt.subplots(figsize=(14,6))
         plt.subplots_adjust(left=.25)
@@ -255,17 +255,17 @@ def plot_global_stats(r_in, allruns):
         rect.set_facecolor('white')
         ax1.xaxis.grid(True,linestyle='-', which='major', color='lightgrey',alpha=0.5)
 
-        # make boxplots for all the routes    
+        # make boxplots for all the routes
         bp = plt.boxplot(data, notch=True,vert=False ,patch_artist=True)
         for b in bp['boxes']:
             b.set_facecolor('lightblue')
-            
+
         plt.title('Route Pace vs. Elevation Gain')
         #plt.ylabel('Route')
         plt.xlabel('sec/km')
 
         #  add the names of the routes to left side of plot
-        #plt.yticks(range(1,max+1), topRnames) 
+        #plt.yticks(range(1,max+1), topRnames)
         #  add the elevations of each route on left side of plot
         estrings = []
         for re in rElevs:
@@ -273,12 +273,12 @@ def plot_global_stats(r_in, allruns):
         for j in range(0,len(estrings)):
             t = estrings[j]
             estrings[j] = topRnames[j] + t.ljust(5)
-        plt.yticks(range(1,max+1), estrings) 
+        plt.yticks(range(1,max+1), estrings)
 
         # add the run count to the right side of the plot
         for j in range(0,len(estrings)):
-            plt.text(350, j+1 , Nruns[j], size='small') 
-        
+            plt.text(350, j+1 , Nruns[j], size='small')
+
         plt.show()
         #ax = fig.add_axes()
         #ax.xaxis.set_ticks_position('left')
@@ -287,7 +287,7 @@ def plot_global_stats(r_in, allruns):
 
     if(PLOTS):
         ##############################################################
-        plt.figure(12)    # histogram of ALL run paces 
+        plt.figure(12)    # histogram of ALL run paces
         paces = []
         for r in allruns:
             paces.append(r.pace)
@@ -368,7 +368,7 @@ def smooth(x,window_len=11,window='hanning'):
         w=eval('np.'+window+'(window_len)')
 
     y=np.convolve(w/w.sum(),s,mode='valid')
-    
+
     y1 = np.zeros(l)
     for i in range(0,l-1):
         y1[i] = y[i]
@@ -399,7 +399,7 @@ class route:
         self.dates = []
         self.plusgain = 0   # elevation gains
         self.minusgain = 0
-        
+
     def add(self, sec, date):  # add a run record to a route
         self.n += 1
         #print 't = ', int(sec), minsec(sec)
@@ -416,20 +416,20 @@ class route:
             self.max_secp = sec
         if (sec < self.min_secp):
             self.min_secp = sec
-            
+
     def avg(self):    # compute mean and sd of route
-        self.avg_pace = self.tot_secp/self.n 
+        self.avg_pace = self.tot_secp/self.n
         self.sd_pace  = m.sqrt(
             (self.n*self.tot_secp2-self.tot_secp*self.tot_secp) /
-            (self.n*(self.n-1)) 
+            (self.n*(self.n-1))
             )
-        
+
 
 def minutes(sec):
-    return int(sec)/60   
+    return int(sec)/60
 
 def seconds(s):
-    return int(s - minutes(s)*60) 
+    return int(s - minutes(s)*60)
 
 def minsec(s):
     return '{:d}:{:02d}'.format(minutes(s),seconds(s))
@@ -449,7 +449,7 @@ with open('ActivityLog.csv','rb') as f:
     for row in data:
         nrn += 1
         #print row[0], '---> ' , row[3]
-        #######################   Run Data 
+        #######################   Run Data
         stdate  = row[0]
         stactiv = row[1]
         stroutenum = row[2]
@@ -457,8 +457,8 @@ with open('ActivityLog.csv','rb') as f:
         stsec  = row[4]
         stdist = row[6]
         stpace = row[7]
-        
-        
+
+
         valid = 1
         if(stactiv != '' and stactiv != 'Run'):
             valid = 0
@@ -466,17 +466,17 @@ with open('ActivityLog.csv','rb') as f:
             valid = 0
         if(stdate == 'Date'):
             valid = 0
-        
+
         if(valid): # this list (allruns) includes runs with only time
             sec = int(stsec)
             date = parser.parse(stdate)
             allruns.append(run(date, 300, sec))  # nominal pace
-        
+
         if(stdist == ''):
             valid = 0
-        if(stroute == ''): 
+        if(stroute == ''):
             valid = 0
-        
+
         if(valid):  # this list (runs) is the best data
             nv += 1
             dist = float(stdist)
@@ -489,26 +489,26 @@ with open('ActivityLog.csv','rb') as f:
                 runs3k.append(secpace)
             if (4.0 < d and d < 7.5):
                 runs5k.append(secpace)
-                
+
             if not (stroute in rd):
                 nrt += 1
-                #print "creating class instance" 
+                #print "creating class instance"
                 r = route(stroute,stroutenum)  # create the new route
                 r.distance = float(stdist)
                 rd[stroute] = r
                 routes.append(r)
-            
+
             rd[stroute].add(secpace,stdate)   # count this run
-            
+
             #print stdate, stroute, "{}:{:02d}".format(pacemin, pacesec)
-            
+
 # add elevation gains to routes
-print 'Elevation gains:'
+#print 'Elevation gains:'
 with open('elev_gain.csv','rb') as f:
     data = csv.reader(f,delimiter=',',quotechar='"')
     for row in data:
         if len(row) == 3:
-            print row
+            #print row
             rn = row[0]
             eplus  = int(row[1])
             eminus = int(row[2])
@@ -525,7 +525,7 @@ print nv  , ' valid runs'
 print nrt , ' routes'
 
 # sort by number of runs on each route
- 
+
 #r2 = sorted(routes,key=operator.attrgetter('tot_secp'))
 r2 = sorted(routes,key=lambda x: x.n,reverse=True)
 #print r2
@@ -537,14 +537,14 @@ print '                                                   Pace '
 print '  i     Route                               N     min  avg   max    sd'
 print '--------------------------------------------------------------------------'
 max = 16
-i = 0 
+i = 0
 for r in r2:
     if(i > max):
         break
     r.avg()
-    print '{:3d} {:40s}{:3d}   {:4s}  {:4s}  {:4s}  {:4.1f}'.format(i,r.name,int(r.n), minsec(r.min_secp), minsec(r.avg_pace), minsec(r.max_secp), r.sd_pace)  
+    print '{:3d} {:40s}{:3d}   {:4s}  {:4s}  {:4s}  {:4.1f}'.format(i,r.name,int(r.n), minsec(r.min_secp), minsec(r.avg_pace), minsec(r.max_secp), r.sd_pace)
     i += 1
- 
+
 
 PLOTS = False
 
@@ -564,14 +564,14 @@ while (True):
         WINDOW = 10  # runs
         r3 = sorted(allruns,key=lambda x: x.date, reverse=False)
         plot_run_rate(r3,WINDOW)
-            
+
     if(i==99):
         plot_global_stats(r2, runs)
         continue
     if(i+1 > len(r2)):
         print "Selected Invalid run number: ", i
         continue
-        
+
     #
     #   Route Histogram
     #
@@ -583,12 +583,12 @@ while (True):
 
     #total = 0
     l = len(r.times) # times have been converted already to pace-300
-    
+
     colors = ['green', 'tomato', 'r']
     onecolor = ['green']
     pctile = 0.15 # this fraction of most recent runs will be in red
     BIG_NEG_FLAG = -1000000
-    recent_mean = BIG_NEG_FLAG  # absurd flag value 
+    recent_mean = BIG_NEG_FLAG  # absurd flag value
     # change color for most recent pctile% of runs
     if(int(pctile*l) > 1):
         #  NOTE: runs are listed most RECENT first
@@ -597,26 +597,26 @@ while (True):
         d0.append(r.times[0])  # most recent
         d1 = (r.times[1:n1])  # next most recent runs
         d2 = (r.times[n1:])  # rest
-        print "size l,d1,d2: ", l, np.size(d1), np.size(d2)
+        #print "size l,d1,d2: ", l, np.size(d1), np.size(d2)
     # plot the histogram
         # shift times down so relative to 300sec = 5:00 min
-        d0[0] -= 300 
-        for j in range(0, len(d1)): 
+        d0[0] -= 300
+        for j in range(0, len(d1)):
             d1[j] -= 300  # 300 seconds
         for j in range(0, len(d2)):
-            d2[j] -= 300 
+            d2[j] -= 300
         n, bins, patches = plt.hist([d2,d1,d0], 50, normed=0,color=colors,stacked=True,alpha=0.5)
-        recent_mean = np.float(np.sum(d1))/n1
-        print "Sum: ", np.sum(d1)
+        recent_mean = np.float(np.sum(d1)+np.sum(d0))/(n1+1)
+        #print "Sum: ", np.sum(d1)
         plt.title(r.name + " (recent runs in RED)")
     else: # plain old boring histogram
         d1 = (r.times[:])
-        for j in range(0, len(d1)):  # shift times down so relative to 5:00 
+        for j in range(0, len(d1)):  # shift times down so relative to 5:00
             d1[j] -= 300  # 300 seconds
         n, bins, patches = plt.hist(d1, 50, normed=0,color=onecolor,alpha=0.5)
         plt.title(r.name)
     #plt.xlabel('time (sec)')
-   
+
     #  make a horizontal bar for mean and += 1 SD
     xl = [r.avg_pace - r.sd_pace,r.avg_pace - r.sd_pace, r.avg_pace, r.avg_pace, r.avg_pace + r.sd_pace, r.avg_pace + r.sd_pace, r.avg_pace - r.sd_pace, r.avg_pace + r.sd_pace]
     for j in range(0,len(xl)):
@@ -636,21 +636,21 @@ while (True):
     if(recent_mean > BIG_NEG_FLAG):
         x = recent_mean
         plt.plot([x,x],[b3, b4],linewidth=2.0, color='red')
-        
-    # plot the normal distribution 
+
+    # plot the normal distribution
     y = 100*mlab.normpdf(bins, r.avg_pace-300, r.sd_pace)
     plt.plot(bins, y, 'r')
 
     plt.xlim([-30,30])
     plt.ylim([0, 13])
     plt.ylabel('N runs')
-    plt.xlabel('Pace per km (sec)')  
+    plt.xlabel('Pace per km (sec)')
 
 
 
-    
+
     ##############################################   Plot Pace vs Time
-    plt.figure(2) 
+    plt.figure(2)
     plt.plot(r.dates, r.times)
     if len(r.times) > 20:
         sm = smooth(np.asarray(r.times), 15, 'flat')
