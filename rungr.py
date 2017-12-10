@@ -560,14 +560,18 @@ while (True):
         WINDOW = 10  # runs
         r3 = sorted(runs,key=lambda x: x.date, reverse=False)
         plot_freq(r3,WINDOW)
+        continue
+
     if(i==81):   #plot minutes of running per week.
         WINDOW = 10  # runs
         r3 = sorted(allruns,key=lambda x: x.date, reverse=False)
         plot_run_rate(r3,WINDOW)
+        continue
 
     if(i==99):
         plot_global_stats(r2, runs)
         continue
+
     if(i+1 > len(r2)):
         print "Selected Invalid run number: ", i
         continue
