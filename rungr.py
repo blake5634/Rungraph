@@ -599,7 +599,7 @@ while (True):
         n1 = int((pctile)*l)  # first 1-p % runs
         d0 = []
         d0.append(r.times[0])  # most recent
-        d1 = (r.times[1:n1])  # next most recent runs
+        d1 = (r.times[1:(n1)])  # next most recent runs
         d2 = (r.times[n1:])  # rest
         #print "size l,d1,d2: ", l, np.size(d1), np.size(d2)
     # plot the histogram
@@ -610,7 +610,7 @@ while (True):
         for j in range(0, len(d2)):
             d2[j] -= 300
         n, bins, patches = plt.hist([d2,d1,d0], 50, normed=0,color=colors,stacked=True,alpha=0.5)
-        recent_mean = np.float(np.sum(d1)+np.sum(d0))/(n1+1)
+        recent_mean = np.float(np.sum(d1)+np.sum(d0))/(n1)
         #print "Sum: ", np.sum(d1)
         plt.title(r.name + " (recent runs in RED)")
     else: # plain old boring histogram
