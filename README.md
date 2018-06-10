@@ -6,6 +6,8 @@ A python program to analyze your data from [Mappedometer.com]{https://http://map
 Mappedometer is a web based site which let's you set up routes on Google Maps, and enter your run times
 (without needing to run with a phone or a GPS watch).
 
+![example histogram](doc/histo_example.png)
+
 ## Features
 
 * Accumulates stats for the 16 runs you have logged the most
