@@ -645,7 +645,7 @@ while (True):
     y = 100*mlab.normpdf(bins, r.avg_pace-300, r.sd_pace)
     plt.plot(bins, y, 'r')
 
-    plt.xlim([-30,30])
+    plt.xlim([-40,20])
     plt.ylim([0, 13])
     plt.ylabel('N runs')
     plt.xlabel('Pace per km (sec)')
