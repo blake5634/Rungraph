@@ -539,7 +539,7 @@ print '-------------------------------------------------------------------------
 max = 16
 i = 0
 for r in r2:
-    if(i > max):
+    if(i > max-1):
         break
     r.avg()
     print '{:3d} {:40s}{:3d}   {:4s}  {:4s}  {:4s}  {:4.1f}'.format(i,r.name,int(r.n), minsec(r.min_secp), minsec(r.avg_pace), minsec(r.max_secp), r.sd_pace)
