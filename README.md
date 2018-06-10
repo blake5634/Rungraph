@@ -1,12 +1,13 @@
 
 ### Rungraph
 
-A python program to analyze your data from [Mappedometer.com](https://http://mappedometer.com).
+A python program to analyze your data from [Mappedometer.com](http://www.mappedometer.com/).
 
 Mappedometer is a web based site which let's you set up routes on Google Maps, and enter your run times
-(without needing to run with a phone or a GPS watch).
+(without needing to run with a phone or a GPS watch).  Here is an example histogram (most recent 15% of your
+runs are in red)
 
-<img src="doc/histo_example.png" width="200">
+<img src="doc/histo_example.png" width="400">
 
 ## Features
 
@@ -24,4 +25,34 @@ Mappedometer is a web based site which let's you set up routes on Google Maps, a
 ## Usage
 
 1. From your "Activity Log" in mappedometer, click "Export" and save as "ActivityLog.csv" (the default name)
-2. >python rungr.py
+2. You need to edit the file *elev_gain.csv* to include elevation gains (available on Mappedometer) for
+your routes.
+
+2. \>python rungr.py
+
+```
+
+707  runs
+636  valid runs
+32  routes
+                                                   Pace
+  i     Route                               N     min  avg   max    sd
+--------------------------------------------------------------------------
+  0 Your first route                        159   4:29  4:52  5:26  11.1
+  1 Your second route                       158   4:37  4:56  5:53  10.3
+
+
+  etc...
+
+
+ 15 Your 16th route                           5   4:42  4:46  4:49   3.3
+
+
+Select a route to graph: (-1 to quit, 80 = freq, 81 = rate, 99 for global plots)
+
+```
+
+3.  Select your route (integer between 0 and 15) for analysis or other numberical commands indicated.
+
+4. enter -1 to quit
+
