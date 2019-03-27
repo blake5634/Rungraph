@@ -16,6 +16,44 @@ from matplotlib.ticker import MaxNLocator
 
 routes = []
 
+
+##   not quite working but got bored!!
+
+def comment_grep(stkey):
+    stkey = 'cold'
+    with open('ActivityLog.csv','rb') as f:
+        data = csv.reader(f,delimiter=',',quotechar='"')
+        rn=0
+        for row in data:
+            #print row[0], '---> ' , row[3]
+            #######################   Run Data
+            stdate  = row[0]
+            stactiv = row[1]
+            stroutenum = row[2]
+            stroute = row[3]
+            stsec  = row[4]
+            stdist = row[6]
+            stpace = row[7]
+            stweight = row[8]
+            stcomnt = row[10]
+            # skip headers
+            valid = 1
+            if(stdist == '' or stdist == 'Distance (km)'):
+                valid = 0
+            if(stroute == ''):
+                valid = 0 
+            if valid==1:
+                dist = float(stdist)
+                secpace = int(stsec)/dist
+                pacemin = int(secpace)/60
+                pacesec = int(secpace - 60*pacemin)
+                
+                if stcomnt.find(stkey) > 0:
+                    rn += 1 
+                    print stdate, stroute, str(pacemin)+':'+str(pacesec), '     ', stcomnt
+        print 'I found ', rn, ' rows.'
+            
+                
 ####################################
 #
 #     Make a heatmap plot of run pace vs N runs per week
@@ -95,6 +133,7 @@ def plot_freq(runs,N):
     print 'Slope:    ', slope
     print 'intercept:', intercept
     print 'r_value:  ', r_value
+    print 'R^2:      ', r_value*r_value
     print 'p_value:  ', p_value
     print 'std_err:  ', std_err
 
@@ -435,6 +474,13 @@ def minsec(s):
     return '{:d}:{:02d}'.format(minutes(s),seconds(s))
 
 
+
+
+##########################################################################333
+#
+#      Start:  Read in data
+#
+
 rd = {} # route dictionary
 
 nv = 0
@@ -531,7 +577,7 @@ r2 = sorted(routes,key=lambda x: x.n,reverse=True)
 #print r2
 
 #
-#  Tabular Data Display
+#  Tabular Data Display and main menu
 #
 print '                                                   Pace '
 print '  i     Route                               N     min  avg   max    sd'
@@ -566,6 +612,10 @@ while (True):
         WINDOW = 10  # runs
         r3 = sorted(allruns,key=lambda x: x.date, reverse=False)
         plot_run_rate(r3,WINDOW)
+        continue
+    
+    if(i==82):   # Search comments for text
+        comment_grep('turn ')
         continue
 
     if(i==99):
