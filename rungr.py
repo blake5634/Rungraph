@@ -21,10 +21,10 @@ routes = []
 
 def comment_grep(stkey):
     stkey = 'cold'
-    with open('ActivityLog.csv','rb') as f:
+    with open('ActivityLog.csv','rt',newline='') as f:
         data = csv.reader(f,delimiter=',',quotechar='"')
         rn=0
-        for row in data:
+        for row in data.decode('utf8'):
             #print row[0], '---> ' , row[3]
             #######################   Run Data
             stdate  = row[0]
@@ -50,8 +50,8 @@ def comment_grep(stkey):
                 
                 if stcomnt.find(stkey) > 0:
                     rn += 1 
-                    print stdate, stroute, str(pacemin)+':'+str(pacesec), '     ', stcomnt
-        print 'I found ', rn, ' rows.'
+                    print(stdate, stroute, str(pacemin)+':'+str(pacesec), '     ', stcomnt)
+        print('I found ', rn, ' rows.')
             
                 
 ####################################
@@ -129,13 +129,13 @@ def plot_freq(runs,N):
     # compute linear regression
     slope, intercept, r_value, p_value, std_err = stats.linregress(freqs, times)
 
-    print ' Regression model: '
-    print 'Slope:    ', slope
-    print 'intercept:', intercept
-    print 'r_value:  ', r_value
-    print 'R^2:      ', r_value*r_value
-    print 'p_value:  ', p_value
-    print 'std_err:  ', std_err
+    print(' Regression model: ')
+    print('Slope:    ', slope)
+    print('intercept:', intercept)
+    print('r_value:  ', r_value)
+    print('R^2:      ', r_value*r_value)
+    print('p_value:  ', p_value)
+    print('std_err:  ', std_err)
 
     #   plot the graph
 
@@ -185,10 +185,10 @@ def plot_freq(runs,N):
 
     fig, (ax0) = plt.subplots(nrows=1)
 
-    print 'Shapes: '
-    print 'xx:     ', xx.shape
-    print 'yy:     ', yy.shape
-    print 'map:    ', map.shape
+    print('Shapes: ')
+    print('xx:     ', xx.shape)
+    print('yy:     ', yy.shape)
+    print('map:    ', map.shape)
 
 
     im = ax0.pcolormesh(xx, yy, map, cmap=cmap, norm=norm)
@@ -251,7 +251,7 @@ def plot_global_stats(r_in, allruns):
         plt.xlabel('sec/km (relative to 5:00)')
 
         #  add the names of the routes to left side of plot
-        plt.yticks(range(1,max+1), topRnames)
+        plt.yticks(list(range(1,max+1)), topRnames)
 
         for j in range(0,max):
             ax1.text(47, j+1 , Nruns[j], size='small')
@@ -312,7 +312,7 @@ def plot_global_stats(r_in, allruns):
         for j in range(0,len(estrings)):
             t = estrings[j]
             estrings[j] = topRnames[j] + t.ljust(5)
-        plt.yticks(range(1,max+1), estrings)
+        plt.yticks(list(range(1,max+1)), estrings)
 
         # add the run count to the right side of the plot
         for j in range(0,len(estrings)):
@@ -385,10 +385,10 @@ def smooth(x,window_len=11,window='hanning'):
     """
 
     if x.ndim != 1:
-        raise ValueError, "smooth only accepts 1 dimension arrays."
+        raise ValueError("smooth only accepts 1 dimension arrays.")
 
     if x.size < window_len:
-        raise ValueError, "Input vector needs to be bigger than window size."
+        raise ValueError("Input vector needs to be bigger than window size.")
 
 
     if window_len<3:
@@ -396,7 +396,7 @@ def smooth(x,window_len=11,window='hanning'):
 
 
     if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
-        raise ValueError, "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
+        raise ValueError("Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'")
 
 
     s=np.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
@@ -465,7 +465,7 @@ class route:
 
 
 def minutes(sec):
-    return int(sec)/60
+    return int(int(sec)/60)
 
 def seconds(s):
     return int(s - minutes(s)*60)
@@ -490,7 +490,7 @@ allruns = []
 runs = []
 runs3k = []
 runs5k = []
-with open('ActivityLog.csv','rb') as f:
+with open('ActivityLog.csv','rt') as f:
     data = csv.reader(f,delimiter=',',quotechar='"')
     for row in data:
         nrn += 1
@@ -550,7 +550,7 @@ with open('ActivityLog.csv','rb') as f:
 
 # add elevation gains to routes
 #print 'Elevation gains:'
-with open('elev_gain.csv','rb') as f:
+with open('elev_gain.csv','rt') as f:
     data = csv.reader(f,delimiter=',',quotechar='"')
     for row in data:
         if len(row) == 3:
@@ -565,10 +565,10 @@ with open('elev_gain.csv','rb') as f:
                     route.plusgain = eplus
                     route.minusgain = eminus
 
-print '\n\n'
-print nrn , ' runs'
-print nv  , ' valid runs'
-print nrt , ' routes'
+print('\n\n')
+print(nrn , ' runs')
+print(nv  , ' valid runs')
+print(nrt , ' routes')
 
 # sort by number of runs on each route
 
@@ -579,16 +579,16 @@ r2 = sorted(routes,key=lambda x: x.n,reverse=True)
 #
 #  Tabular Data Display and main menu
 #
-print '                                                   Pace '
-print '  i     Route                               N     min  avg   max    sd'
-print '--------------------------------------------------------------------------'
+print('                                                   Pace ')
+print('  i     Route                               N     min  avg   max    sd')
+print('--------------------------------------------------------------------------')
 max = 16
 i = 0
 for r in r2:
     if(i > max-1):
         break
     r.avg()
-    print '{:3d} {:40s}{:3d}   {:4s}  {:4s}  {:4s}  {:4.1f}'.format(i,r.name,int(r.n), minsec(r.min_secp), minsec(r.avg_pace), minsec(r.max_secp), r.sd_pace)
+    print('{:3d} {:40s}{:3d}   {:4s}  {:4s}  {:4s}  {:4.1f}'.format(i,r.name,int(r.n), minsec(r.min_secp), minsec(r.avg_pace), minsec(r.max_secp), r.sd_pace))
     i += 1
 
 
@@ -596,10 +596,10 @@ PLOTS = False
 
 ##############################################################
 
-print '\n'    #    Get user input
+print('\n')    #    Get user input
 
 while (True):
-    i = int(input("Select a route to graph: (-1 to quit, 80 = freq, 81 = rate, 99 for global plots) "))
+    i = int(eval(input("Select a route to graph: (-1 to quit, 80 = freq, 81 = rate, 99 for global plots) ")))
     if(i<0):
         quit()
     if(i==80):   #plot pace vs run frequency (runs/wk)
@@ -623,7 +623,7 @@ while (True):
         continue
 
     if(i+1 > len(r2)):
-        print "Selected Invalid run number: ", i
+        print("Selected Invalid run number: ", i)
         continue
 
     #
