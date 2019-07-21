@@ -599,7 +599,7 @@ PLOTS = False
 print('\n')    #    Get user input
 
 while (True):
-    i = int(eval(input("Select a route to graph: (-1 to quit, 80 = freq, 81 = rate, 99 for global plots) ")))
+    i = int(int(raw_input("Select a route to graph: (-1 to quit, 80 = freq, 81 = rate, 99 for global plots) ")))
     if(i<0):
         quit()
     if(i==80):   #plot pace vs run frequency (runs/wk)
