@@ -549,7 +549,7 @@ with open('ActivityLog.csv','rt') as f:
             #print stdate, stroute, "{}:{:02d}".format(pacemin, pacesec)
 
 # add elevation gains to routes
-#print 'Elevation gains:'
+#print 'Elevation gains:
 with open('elev_gain.csv','rt') as f:
     data = csv.reader(f,delimiter=',',quotechar='"')
     for row in data:
@@ -706,9 +706,14 @@ while (True):
     ##############################################   Plot Pace vs Time
     plt.figure(2)
     plt.plot(r.dates, r.times)
+    # since data is most recent first, smooth a reversed array:
+    rtimes = r.times
+    rtimes.reverse() # in place
+    revtimes = np.array(rtimes)
     if len(r.times) > 20:
-        sm = smooth(np.asarray(r.times), 15, 'flat')
-        #print "Data is smoothed ", sm.shape
+        sm = np.flip(smooth(revtimes, 15, 'flat'),0) # flip = unreverse to match most-recent-first
+        #fix glitch in last (most recent) pt
+        sm[0] = sm[1] #hack
         plt.plot(r.dates, sm.T)
         plt.title('Pace History with 15 run moving avg.: '+r.name)
     else:
