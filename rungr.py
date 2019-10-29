@@ -84,13 +84,22 @@ def plot_run_rate(runs, N):  # plot minutes per week vs time
             wk_time = 0
             nextdate = nextdate + dt.timedelta(days=7)
     plt.plot(dates, times)
+
+# since data is most recent first, smooth a reversed array:
+    rtimes = times
+    rtimes.reverse() # in place
+    revtimes = np.array(rtimes)
     if len(times) > 20:
-        sm = smooth(np.asarray(times), 15, 'flat')
-        #print "Data is smoothed ", sm.shape
+        sm = np.flip(smooth(revtimes, 15, 'flat'),0)  # flip = unreverse to match most-recent-first
+        #print "Data is smoothed ", sm.shape 
+        #fix glitch in last (most recent) pt
+        sm[0] = sm[1] #hack
         plt.plot(dates, sm.T)
         plt.title('Weekly Run Minutes with moving avg.')
     else:
         plt.title('Weekly Run Minutes')
+    plt.xlabel('Week number ')
+    plt.ylabel('Weekly Running Time (Min)')
     plt.grid([1,1])
     plt.ylim([0,100])
     plt.show()
