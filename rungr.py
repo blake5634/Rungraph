@@ -606,7 +606,10 @@ for r in r2:
 
 
 PLOTS = False
-
+#mpl.rcParams.update({'font.size': 22})
+print (plt.style.available)
+plt.style.use('ggplot')
+plt.figure(figsize=(8,8),dpi=200)
 ##############################################################
 
 print('\n')    #    Get user input
@@ -644,9 +647,8 @@ while (True):
     #
     r = r2[i]    # get the route object
 
-    #fig, ax2 = plt.subplot()
-    plt.figure(1)
-    #fig, ax1 = plt.subplots(figsize=(6,6))
+    plt.figure(1,figsize=(8,8),dpi=200)
+    #plt.figure(1)
 
     #total = 0
     l = len(r.times) # times have been converted already to pace-300
@@ -735,29 +737,28 @@ while (True):
     ax2.set_xticks(mmss_tick_locs)
     ax2.set_xticklabels(mmss_tick_labs)
     ax2.set_xlabel('mm:ss pace per km')
-    #print 'Version:', mpl.__version__
-    #ax2 = ax1.secondary_xaxis('top',functions=(sec2mmss,mmss2sec))
-    #plt.xlim([-40,20])
-        
-    # Show the major grid lines with dark grey lines
-    plt.grid(b=True, which='major', color='#666666', linestyle='-')
-
-    # Show the minor grid lines with very faint and almost transparent grey lines
-    plt.minorticks_on()
-    plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
-
-    
-    ax1.set_xlim([xmin,xmax])
-    ax2.set_xlim([xmin,xmax])
-    plt.ylim([0, 15])
     ax1.set_ylabel('N runs')
-    ax1.set_xlabel('Pace per km (sec)')
+    ax1.set_xlabel('Pace per km (sec)')        
+    #
+    # set up axis parameters
+    #
+    for axis in [ax1, ax2]:
+        # Show the major grid lines with dark grey lines
+        axis.grid(b=True, which='major', color='#666666', linestyle='-')
+
+        # Show the minor grid lines with very faint and almost transparent grey lines
+        axis.minorticks_on()
+        #plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
+        axis.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
+        
+        axis.set_xlim([xmin,xmax])        
+        axis.set_ylim([0, 15])
 
 
 
 
     ##############################################   Plot Pace vs Time
-    plt.figure(2)
+    plt.figure(2,figsize=(10,6),dpi=200)
     plt.plot(r.dates, r.times)
     # since data is most recent first, smooth a reversed array:
     rtimes = r.times
