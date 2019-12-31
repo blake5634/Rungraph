@@ -10,6 +10,7 @@ from   dateutil import parser
 
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
@@ -37,12 +38,12 @@ def comment_grep(stkey):
             stweight = row[8]
             stcomnt = row[10]
             # skip headers
-            valid = 1
+            valid = True
             if(stdist == '' or stdist == 'Distance (km)'):
-                valid = 0
+                valid = False
             if(stroute == ''):
-                valid = 0 
-            if valid==1:
+                valid = False 
+            if valid:
                 dist = float(stdist)
                 secpace = int(stsec)/dist
                 pacemin = int(secpace)/60
@@ -514,13 +515,13 @@ with open('ActivityLog.csv','rt') as f:
         stpace = row[7]
 
 
-        valid = 1
+        valid = True
         if(stactiv != '' and stactiv != 'Run'):
-            valid = 0
+            valid = False
         if(stsec == ''):
-            valid = 0
+            valid = False
         if(stdate == 'Date'):
-            valid = 0
+            valid = False
 
         if(valid): # this list (allruns) includes runs with only time
             sec = int(stsec)
@@ -528,9 +529,9 @@ with open('ActivityLog.csv','rt') as f:
             allruns.append(run(date, 300, sec))  # nominal pace
 
         if(stdist == ''):
-            valid = 0
+            valid = False
         if(stroute == ''):
-            valid = 0
+            valid = False
 
         if(valid):  # this list (runs) is the best data
             nv += 1
@@ -539,6 +540,9 @@ with open('ActivityLog.csv','rt') as f:
             pacemin = int(secpace)/60
             pacesec = int(secpace - 60*pacemin)
             runs.append(run(parser.parse(stdate),secpace))  # store the overall runs
+            #
+            # break runs down by "3k" and "5k" lengths
+            #
             d = float(stdist)
             if (2.8 < d and d < 4.0):
                 runs3k.append(secpace)
@@ -655,6 +659,7 @@ while (True):
     # change color for most recent pctile% of runs
     if(int(pctile*l) > 1):
         #  NOTE: runs are listed most RECENT first
+        # break the runs up into 1) most recent run 2) most recent 15%, 3) rest
         n1 = int((pctile)*l)  # first 1-p % runs
         d0 = []
         d0.append(r.times[0])  # most recent
@@ -662,28 +667,32 @@ while (True):
         d2 = (r.times[n1:])  # rest
         #print "size l,d1,d2: ", l, np.size(d1), np.size(d2)
     # plot the histogram
-        # shift times down so relative to 300sec = 5:00 min
-        d0[0] -= 300
-        for j in range(0, len(d1)):
-            d1[j] -= 300  # 300 seconds
-        for j in range(0, len(d2)):
-            d2[j] -= 300
+        ## shift times down so relative to 300sec = 5:00 min
+        #d0[0] -= 300
+        #for j in range(0, len(d1)):
+            #d1[j] -= 300  # 300 seconds
+        #for j in range(0, len(d2)):
+            #d2[j] -= 300
         n, bins, patches = plt.hist([d2,d1,d0], 50, normed=0,color=colors,stacked=True,alpha=0.5)
+        print('////////////\nn: ', n)
+        print('bins:', bins)
+        print('patches:', patches)
         recent_mean = np.float(np.sum(d1)+np.sum(d0))/(n1)
         #print "Sum: ", np.sum(d1)
-        plt.title(r.name + " (recent runs in RED)")
+        plt.suptitle(r.name + " (recent runs in RED)")
     else: # plain old boring histogram
         d1 = (r.times[:])
-        for j in range(0, len(d1)):  # shift times down so relative to 5:00
-            d1[j] -= 300  # 300 seconds
+        #for j in range(0, len(d1)):  # shift times down so relative to 5:00
+            #d1[j] -= 300  # 300 seconds
         n, bins, patches = plt.hist(d1, 50, normed=0,color=onecolor,alpha=0.5)
         plt.title(r.name)
-    #plt.xlabel('time (sec)')
-
+    plt.xlabel('time (sec)')
+    #
     #  make a horizontal bar for mean and += 1 SD
+    #
     xl = [r.avg_pace - r.sd_pace,r.avg_pace - r.sd_pace, r.avg_pace, r.avg_pace, r.avg_pace + r.sd_pace, r.avg_pace + r.sd_pace, r.avg_pace - r.sd_pace, r.avg_pace + r.sd_pace]
-    for j in range(0,len(xl)):
-        xl[j] -= 300   # subtract off 5:00 pace
+    #for j in range(0,len(xl)):
+        #xl[j] -= 300   # subtract off 5:00 pace
     b1 = 6.0
     tick = 0.25
     b2 = b1+tick
@@ -701,13 +710,48 @@ while (True):
         plt.plot([x,x],[b3, b4],linewidth=2.0, color='red')
 
     # plot the normal distribution
-    y = 100*mlab.normpdf(bins, r.avg_pace-300, r.sd_pace)
+    y = 100*mlab.normpdf(bins, r.avg_pace, r.sd_pace)
     plt.plot(bins, y, 'r')
+    
+    xmin = 260
+    xmax = 320 
+    
+    
+    #
+    #  plot a 'secondary' x-axis for the mm:ss representation 
+    #
+    def sec2mmss(s):
+        return dt.timedelta(seconds=s)
+    #def mmss2sec(td):
+        #return td.total_seconds()
+    
+    ax1 = plt.gca()
+    ax2 = ax1.twiny()
+    ax2.set_xlim(ax1.get_xlim())
+    mmss_tick_locs = [xmin+ 10*i for i in range(int((xmax-xmin)/10))]
+    mmss_tick_labs = [str(sec2mmss(s))[3:] for s in mmss_tick_locs]
+    print (mmss_tick_locs)
+    print (mmss_tick_labs)
+    ax2.set_xticks(mmss_tick_locs)
+    ax2.set_xticklabels(mmss_tick_labs)
+    ax2.set_xlabel('mm:ss pace per km')
+    #print 'Version:', mpl.__version__
+    #ax2 = ax1.secondary_xaxis('top',functions=(sec2mmss,mmss2sec))
+    #plt.xlim([-40,20])
+        
+    # Show the major grid lines with dark grey lines
+    plt.grid(b=True, which='major', color='#666666', linestyle='-')
 
-    plt.xlim([-40,20])
-    plt.ylim([0, 13])
-    plt.ylabel('N runs')
-    plt.xlabel('Pace per km (sec)')
+    # Show the minor grid lines with very faint and almost transparent grey lines
+    plt.minorticks_on()
+    plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
+
+    
+    ax1.set_xlim([xmin,xmax])
+    ax2.set_xlim([xmin,xmax])
+    plt.ylim([0, 15])
+    ax1.set_ylabel('N runs')
+    ax1.set_xlabel('Pace per km (sec)')
 
 
 
