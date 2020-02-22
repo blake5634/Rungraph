@@ -607,8 +607,9 @@ for r in r2:
 
 PLOTS = False
 #mpl.rcParams.update({'font.size': 22})
-print (plt.style.available)
-plt.style.use('ggplot')
+#print (plt.style.available)
+#plt.style.use('ggplot')
+plt.style.use('fivethirtyeight')
 plt.figure(figsize=(8,8),dpi=200)
 ##############################################################
 
@@ -676,9 +677,9 @@ while (True):
         #for j in range(0, len(d2)):
             #d2[j] -= 300
         n, bins, patches = plt.hist([d2,d1,d0], 50, normed=0,color=colors,stacked=True,alpha=0.5)
-        print('////////////\nn: ', n)
-        print('bins:', bins)
-        print('patches:', patches)
+        #print('////////////\nn: ', n)
+        #print('bins:', bins)
+        #print('patches:', patches)
         recent_mean = np.float(np.sum(d1)+np.sum(d0))/(n1)
         #print "Sum: ", np.sum(d1)
         plt.suptitle(r.name + " (recent runs in RED)")
@@ -732,8 +733,6 @@ while (True):
     ax2.set_xlim(ax1.get_xlim())
     mmss_tick_locs = [xmin+ 10*i for i in range(int((xmax-xmin)/10))]
     mmss_tick_labs = [str(sec2mmss(s))[3:] for s in mmss_tick_locs]
-    print (mmss_tick_locs)
-    print (mmss_tick_labs)
     ax2.set_xticks(mmss_tick_locs)
     ax2.set_xticklabels(mmss_tick_labs)
     ax2.set_xlabel('mm:ss pace per km')
