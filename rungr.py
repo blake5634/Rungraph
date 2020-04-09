@@ -690,6 +690,7 @@ while (True):
         n, bins, patches = plt.hist(d1, 50, normed=0,color=onecolor,alpha=0.5)
         plt.title(r.name)
     plt.xlabel('time (sec)')
+    nruns = len(r.times)
     #
     #  make a horizontal bar for mean and += 1 SD
     #
@@ -750,8 +751,9 @@ while (True):
         #plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
         axis.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
         
-        axis.set_xlim([xmin,xmax])        
-        axis.set_ylim([0, 15])
+        axis.set_xlim([xmin,xmax])
+        ymax = int(nruns*0.10/5) * 5
+        axis.set_ylim([0, ymax])
 
 
 

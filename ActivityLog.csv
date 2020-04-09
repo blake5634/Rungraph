@@ -1,4 +1,52 @@
 Date,Activity,"Route number",Name,"Elapsed seconds","Elapsed Hours:Mins:Secs","Distance (km)",Pace,Weight,Steps,Notes
+2020-04-08,,143114,"Reservoir Basic",961,0:16:1,3.4016060403392,4.7085601556226,157,,"57F, sunny."
+2020-04-05,,653902,"45th to 65th loop",875,0:14:35,3.0821995365373,4.7314695756905,156,,"52F, lo-mo, 1:30pm   60pushups + 2 65second planks"
+2020-04-03,,143114,"Reservoir Basic",1000,0:16:40,3.4016060403392,4.8996463638113,158,,"44F, sunny, consolidation run."
+2020-04-01,,143114,"Reservoir Basic",966,0:16:6,3.4016060403392,4.7330583874417,155,,"45F, 6:42 to sign, clear, 11:30AM. +60pushups"
+2020-03-30,,143114,"Reservoir Basic",963,0:16:3,3.4016060403392,4.7183594483503,,,"48F, sunny, 11:30AM, +60pushups & 2 65sec planks.   6:42 to sign"
+2020-03-29,"biking on BGT",,,,,,,,,
+2020-03-27,,143114,"Reservoir Basic",976,0:16:16,3.4016060403392,4.7820548510798,156,,"43F, cloudy, 60 pushups + 2 65sec planks"
+2020-03-24,,562270,"no lights local loop",1065,0:17:45,3.6056064858572,4.9228888592318,157,,"50F, sunny, 3:10pm, + 48pushups & 3 planks"
+2020-03-22,,143114,"Reservoir Basic",971,0:16:11,3.4016060403392,4.7575566192607,,,"50F, clear, lo-mo"
+2020-03-20,,143116,"Greenlake 3k",1122,0:18:42,3.9005992411698,4.7941351684188,,,"51F, sunny, blah (COVID! nobody out)
+"
+2020-03-17,,234220,"Upper Reservoir Park",1287,0:21:27,4.6174493393636,4.645421838663,158,,"50F. partly cldy. "
+2020-03-16,"Walk to & around Greenlake",,,,,,,155,,"Beautiful crisp, sunny"
+2020-03-15,"Cross Country",,,135,0:2:15,,,155,,"Crystal Springs, beautiful!"
+2020-03-13,,653902,"45th to 65th loop",882,0:14:42,3.0821995365373,4.769321332296,158,,"39F, wind &rain, lo-mo, yuk + 48pushups + 2 65sec planks."
+2020-03-11,,143114,"Reservoir Basic",980,0:16:20,3.4016060403392,4.801653436535,,,"48F, belly full from lunch! ugh."
+2020-03-08,"Cross Country",,,10800,3:0:0,,,,,
+2020-03-07,,143114,"Reservoir Basic",967,0:16:7,3.4016060403392,4.7379580338055,157,,"43F, good caf. too hot before 65th? +36pushups +2 65sec planks"
+2020-03-05,,143116,"Greenlake 3k",1085,0:18:5,3.9005992411698,4.6360398019023,,,"55F, 3:00 PM"
+2020-03-03,,562270,"no lights local loop",1050,0:17:30,3.6056225792972,4.8535307329397,157,,"50F, 4:00PM, cloudy +36 pushups/ 2 60sec planks"
+2020-03-01,"Cross Country",,,9000,2:30:0,,,157,,"Hyak, nice snow, ptly cldy 32F"
+2020-02-29,,242812,"Greenlake out-and-back 5k",1435,0:23:55,4.9014663685921,4.879492149517,,,"50F, 3:00pm  lo-caff?"
+2020-02-27,,,,300,0:5:0,,,156,,"quick run to weights@YMCA"
+2020-02-26,,143114,"Reservoir Basic",973,0:16:13,3.4016060403392,4.7673559119884,,,"51F, 4:15pm"
+2020-02-24,,,,1320,0:22:0,,,157,,"15+7treadmill + weights@YMCA"
+2020-02-21,,759536,"Latona Loop corrected ",1051,0:17:31,3.5595953408796,4.9209713434275,157,,"55F, consolidation + weights@YMCA"
+2020-02-19,,,,1330,0:22:10,,,157,,"22_10treadmill +weights@YMCA"
+2020-02-16,"Cross Country",,,10800,3:0:0,,,,,"Crystal Springs"
+2020-02-15,,759536,"Latona Loop corrected ",1061,0:17:41,3.5596114343196,4.9677706849802,157,,+weights@YMCA
+2020-02-12,,,,1636,0:27:16,,,156,,"17+10treadmill +weights@YMCA"
+2020-02-10,,,,1210,0:20:10,,,,,
+2020-02-08,,,,1326,0:22:6,,,157,,"10+12treadmill + weights@YMCA"
+2020-02-02,,,,1496,0:24:56,,,,,"12.5+12.5,  Mission Bay, San Diego"
+2020-01-30,,,,1257,0:20:57,,,156,,"8.5+12.5@3% + weights@YMCA"
+2020-01-27,,,,1257,0:20:57,,,,,"8.5+12.5@3% + weights@YMCA
+"
+2020-01-25,,,,1382,0:23:2,,,157,,"8.5+13.5treadmill + weights@YMCA"
+2020-01-22,,,,1200,0:20:0,,,,,"8+12treadmill +weights@YMCA"
+2020-01-20,,,,1275,0:21:15,,,,,"9+12treadmill +weights@YMCA"
+2020-01-19,"Cross Country",,,7200,2:0:0,,,156,,"Lake Easton St. Pk. Good snow."
+2020-01-17,,,,1339,0:22:19,,,155,,"8.5+14 treadmill +weights@YMCA"
+2020-01-15,,,,1302,0:21:42,,,158,,8+13treadmill+weights@YMCA
+2020-01-12,,,,1224,0:20:24,,,,,"8+12treadmill + weights@YMCA
+"
+2020-01-10,,,,1218,0:20:18,,,,,"7+13treadmill + weights@YMCA"
+2020-01-08,,759536,"Latona Loop corrected ",1046,0:17:26,3.5595953408796,4.8975604426501,157,,"40F, dry, 4:30PM, + weights@YMCA"
+2020-01-05,"Cross Country Skiing",,,7200,2:0:0,,,,,"Hyak, new skiis, great snow"
+2020-01-03,,,,1260,0:21:0,,,157,,"10+11 treadmill+weights@YMCA (BV)"
 2019-12-30,,653902,"45th to 65th loop",878,0:14:38,3.0821995365373,4.7476917570929,159,,"4:00PM, 47F, cloudy, +weights@YMCA"
 2019-12-28,,143116,"Greenlake 3k",1083,0:18:3,3.9005992411698,4.6274941064149,159,,"Back from Mexico! 2:00PM, Hot start - 3:39 to 65th. 47F, cloudy, dry + weights@YMCA"
 2019-12-17,,143114,"Reservoir Basic",970,0:16:10,3.4016060403392,4.7526569728969,,,"3:30pm 47F, +weights@YMCA, grrr. 6:46 to sign (too fast?)"
