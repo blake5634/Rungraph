@@ -647,6 +647,7 @@ while (True):
     #   Route Histogram
     #
     r = r2[i]    # get the route object
+    ymax = np.max([5,int(len(r.times)*0.10/5) * 5]) # auto scale y-axis
 
     plt.figure(1,figsize=(8,8),dpi=200)
     #plt.figure(1)
@@ -697,8 +698,8 @@ while (True):
     xl = [r.avg_pace - r.sd_pace,r.avg_pace - r.sd_pace, r.avg_pace, r.avg_pace, r.avg_pace + r.sd_pace, r.avg_pace + r.sd_pace, r.avg_pace - r.sd_pace, r.avg_pace + r.sd_pace]
     #for j in range(0,len(xl)):
         #xl[j] -= 300   # subtract off 5:00 pace
-    b1 = 6.0
-    tick = 0.25
+    b1 = ymax * 0.5   # 3/4 up the Y-axis
+    tick = ymax/25.0
     b2 = b1+tick
     b3 = b2+tick/2
     b4 = b3+tick
@@ -714,7 +715,8 @@ while (True):
         plt.plot([x,x],[b3, b4],linewidth=2.0, color='red')
 
     # plot the normal distribution
-    y = 100*mlab.normpdf(bins, r.avg_pace, r.sd_pace)
+    nd = mlab.normpdf(bins, r.avg_pace, r.sd_pace)
+    y = 0.75*ymax*nd/np.max(nd)   #auto scale height of normal dist.
     plt.plot(bins, y, 'r')
     
     xmin = 260
@@ -752,7 +754,6 @@ while (True):
         axis.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
         
         axis.set_xlim([xmin,xmax])
-        ymax = int(nruns*0.10/5) * 5
         axis.set_ylim([0, ymax])
 
 
