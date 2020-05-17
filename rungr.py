@@ -647,13 +647,13 @@ while (True):
     #   Route Histogram
     #
     r = r2[i]    # get the route object
-    ymax = np.max([5,int(len(r.times)*0.10/5) * 5]) # auto scale y-axis
+    l = len(r.times) # times have been converted already to pace-300
+    ymax = np.max([5,(int(l)*0.10/5) * 5]) # auto scale y-axis
 
     plt.figure(1,figsize=(8,8),dpi=200)
     #plt.figure(1)
 
     #total = 0
-    l = len(r.times) # times have been converted already to pace-300
 
     colors = ['green', 'tomato', 'r']
     onecolor = ['green']
@@ -661,26 +661,15 @@ while (True):
     BIG_NEG_FLAG = -1000000
     recent_mean = BIG_NEG_FLAG  # absurd flag value
     # change color for most recent pctile% of runs
+    d0=d1=d2=[]
     if(int(pctile*l) > 1):
         #  NOTE: runs are listed most RECENT first
         # break the runs up into 1) most recent run 2) most recent 15%, 3) rest
         n1 = int((pctile)*l)  # first 1-p % runs
-        d0 = []
         d0.append(r.times[0])  # most recent
         d1 = (r.times[1:(n1)])  # next most recent runs
         d2 = (r.times[n1:])  # rest
-        #print "size l,d1,d2: ", l, np.size(d1), np.size(d2)
-    # plot the histogram
-        ## shift times down so relative to 300sec = 5:00 min
-        #d0[0] -= 300
-        #for j in range(0, len(d1)):
-            #d1[j] -= 300  # 300 seconds
-        #for j in range(0, len(d2)):
-            #d2[j] -= 300
         n, bins, patches = plt.hist([d2,d1,d0], 50, normed=0,color=colors,stacked=True,alpha=0.5)
-        #print('////////////\nn: ', n)
-        #print('bins:', bins)
-        #print('patches:', patches)
         recent_mean = np.float(np.sum(d1)+np.sum(d0))/(n1)
         #print "Sum: ", np.sum(d1)
         plt.suptitle(r.name + " (recent runs in RED)")
@@ -698,7 +687,7 @@ while (True):
     xl = [r.avg_pace - r.sd_pace,r.avg_pace - r.sd_pace, r.avg_pace, r.avg_pace, r.avg_pace + r.sd_pace, r.avg_pace + r.sd_pace, r.avg_pace - r.sd_pace, r.avg_pace + r.sd_pace]
     #for j in range(0,len(xl)):
         #xl[j] -= 300   # subtract off 5:00 pace
-    b1 = ymax * 0.5   # 3/4 up the Y-axis
+    b1 = ymax * 0.5   # partway up the Y-axis
     tick = ymax/25.0
     b2 = b1+tick
     b3 = b2+tick/2
@@ -733,7 +722,7 @@ while (True):
     
     ax1 = plt.gca()
     ax2 = ax1.twiny()
-    ax2.set_xlim(ax1.get_xlim())
+    #ax2.set_xlim(ax1.get_xlim())
     mmss_tick_locs = [xmin+ 10*i for i in range(int((xmax-xmin)/10))]
     mmss_tick_labs = [str(sec2mmss(s))[3:] for s in mmss_tick_locs]
     ax2.set_xticks(mmss_tick_locs)
@@ -763,7 +752,7 @@ while (True):
     plt.figure(2,figsize=(10,6),dpi=200)
     plt.plot(r.dates, r.times)
     # since data is most recent first, smooth a reversed array:
-    rtimes = r.times
+    rtimes = list(r.times)   #python3: convert to r.times.copy()
     rtimes.reverse() # in place
     revtimes = np.array(rtimes)
     if len(r.times) > 20:
