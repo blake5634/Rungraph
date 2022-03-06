@@ -3,19 +3,75 @@ import numpy as np       # operations on numerical arrays
 import csv               # file I/O
 import math as m
 import operator          # for sorting list of class instances
-import numpy as np
 from scipy import stats
 import datetime as dt
 from   dateutil import parser
 
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
 
 routes = []
 
+    
+    #
+    #  make a horizontal bar for mean and += 1 SD
+    #
+def plotHbar(x1,x2,y):
+    #  were going for |------|------| here:
+    x21 = (x1+x2)/2.0
+    xl = [x1,x1,x1,x21,x21,x21,x21, x2,x2,x2]
+    #for j in range(0,len(xl)):
+        #xl[j] -= 300   # subtract off 5:00 pace
+        # partway up the Y-axis
+    T = y/25.0  # length of vertical 
+    yl = [y-T/2,y+T/2,y,   y, y+0.55*T,y-0.55*T,y ,  y  ,y-T/2,y+T/2]
+#    for i in [0,2,4,6]:
+#        x = [xl[i], xl[i+1]]
+#        y = [yl[i], yl[i+1]]
+#        plt.plot(x,y, linewidth= 2.0, alpha= 1.0,color='blue')
+    plt.plot(xl,yl,linewidth=2.0, alpha=1.0,color='blue')
+
+##   not quite working but got bored!!
+
+def comment_grep(stkey):
+    stkey = 'cold'
+    with open('ActivityLog.csv','rt',newline='') as f:
+        data = csv.reader(f,delimiter=',',quotechar='"')
+        rn=0
+        for row in data.decode('utf8'):
+            #print row[0], '---> ' , row[3]
+            #######################   Run Data
+            stdate  = row[0]
+            stactiv = row[1]
+            stroutenum = row[2]
+            stroute = row[3]
+            stsec  = row[4]
+            stdist = row[6]
+            stpace = row[7]
+            stweight = row[8]
+            stcomnt = row[10]
+            # skip headers
+            valid = True
+            if(stdist == '' or stdist == 'Distance (km)'):
+                valid = False
+            if(stroute == ''):
+                valid = False 
+            if valid:
+                dist = float(stdist)
+                secpace = int(stsec)/dist
+                pacemin = int(secpace)/60
+                pacesec = int(secpace - 60*pacemin)
+                
+                if stcomnt.find(stkey) > 0:
+                    rn += 1 
+                    print(stdate, stroute, str(pacemin)+':'+str(pacesec), '     ', stcomnt)
+        print('I found ', rn, ' rows.')
+            
+                
 ####################################
 #
 #     Make a heatmap plot of run pace vs N runs per week
@@ -46,13 +102,22 @@ def plot_run_rate(runs, N):  # plot minutes per week vs time
             wk_time = 0
             nextdate = nextdate + dt.timedelta(days=7)
     plt.plot(dates, times)
+
+# since data is most recent first, smooth a reversed array:
+    rtimes = times
+    rtimes.reverse() # in place
+    revtimes = np.array(rtimes)
     if len(times) > 20:
-        sm = smooth(np.asarray(times), 15, 'flat')
-        #print "Data is smoothed ", sm.shape
+        sm = np.flip(smooth(revtimes, 15, 'flat'),0)  # flip = unreverse to match most-recent-first
+        #print "Data is smoothed ", sm.shape 
+        #fix glitch in last (most recent) pt
+        sm[0] = sm[1] #hack
         plt.plot(dates, sm.T)
         plt.title('Weekly Run Minutes with moving avg.')
     else:
         plt.title('Weekly Run Minutes')
+    plt.xlabel('Week number ')
+    plt.ylabel('Weekly Running Time (Min)')
     plt.grid([1,1])
     plt.ylim([0,100])
     plt.show()
@@ -91,12 +156,13 @@ def plot_freq(runs,N):
     # compute linear regression
     slope, intercept, r_value, p_value, std_err = stats.linregress(freqs, times)
 
-    print ' Regression model: '
-    print 'Slope:    ', slope
-    print 'intercept:', intercept
-    print 'r_value:  ', r_value
-    print 'p_value:  ', p_value
-    print 'std_err:  ', std_err
+    print(' Regression model: ')
+    print('Slope:    ', slope)
+    print('intercept:', intercept)
+    print('r_value:  ', r_value)
+    print('R^2:      ', r_value*r_value)
+    print('p_value:  ', p_value)
+    print('std_err:  ', std_err)
 
     #   plot the graph
 
@@ -146,10 +212,10 @@ def plot_freq(runs,N):
 
     fig, (ax0) = plt.subplots(nrows=1)
 
-    print 'Shapes: '
-    print 'xx:     ', xx.shape
-    print 'yy:     ', yy.shape
-    print 'map:    ', map.shape
+    print('Shapes: ')
+    print('xx:     ', xx.shape)
+    print('yy:     ', yy.shape)
+    print('map:    ', map.shape)
 
 
     im = ax0.pcolormesh(xx, yy, map, cmap=cmap, norm=norm)
@@ -212,7 +278,7 @@ def plot_global_stats(r_in, allruns):
         plt.xlabel('sec/km (relative to 5:00)')
 
         #  add the names of the routes to left side of plot
-        plt.yticks(range(1,max+1), topRnames)
+        plt.yticks(list(range(1,max+1)), topRnames)
 
         for j in range(0,max):
             ax1.text(47, j+1 , Nruns[j], size='small')
@@ -273,7 +339,7 @@ def plot_global_stats(r_in, allruns):
         for j in range(0,len(estrings)):
             t = estrings[j]
             estrings[j] = topRnames[j] + t.ljust(5)
-        plt.yticks(range(1,max+1), estrings)
+        plt.yticks(list(range(1,max-1)), estrings)
 
         # add the run count to the right side of the plot
         for j in range(0,len(estrings)):
@@ -291,7 +357,7 @@ def plot_global_stats(r_in, allruns):
         paces = []
         for r in allruns:
             paces.append(r.pace)
-        n, bins, patches = plt.hist(paces, 50, normed=0, facecolor='blue', alpha=0.5)
+        n, bins, patches = plt.hist(paces, 50,   facecolor='blue', alpha=0.5)
         plt.xlabel('time (sec)')
         plt.xlim([270,350])
         plt.title('All Runs')
@@ -346,10 +412,10 @@ def smooth(x,window_len=11,window='hanning'):
     """
 
     if x.ndim != 1:
-        raise ValueError, "smooth only accepts 1 dimension arrays."
+        raise ValueError("smooth only accepts 1 dimension arrays.")
 
     if x.size < window_len:
-        raise ValueError, "Input vector needs to be bigger than window size."
+        raise ValueError("Input vector needs to be bigger than window size.")
 
 
     if window_len<3:
@@ -357,7 +423,7 @@ def smooth(x,window_len=11,window='hanning'):
 
 
     if not window in ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
-        raise ValueError, "Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'"
+        raise ValueError("Window is on of 'flat', 'hanning', 'hamming', 'bartlett', 'blackman'")
 
 
     s=np.r_[x[window_len-1:0:-1],x,x[-1:-window_len:-1]]
@@ -426,7 +492,7 @@ class route:
 
 
 def minutes(sec):
-    return int(sec)/60
+    return int(int(sec)/60)
 
 def seconds(s):
     return int(s - minutes(s)*60)
@@ -434,6 +500,13 @@ def seconds(s):
 def minsec(s):
     return '{:d}:{:02d}'.format(minutes(s),seconds(s))
 
+
+
+
+##########################################################################333
+#
+#      Start:  Read in data
+#
 
 rd = {} # route dictionary
 
@@ -444,7 +517,7 @@ allruns = []
 runs = []
 runs3k = []
 runs5k = []
-with open('ActivityLog.csv','rb') as f:
+with open('ActivityLog.csv','rt') as f:
     data = csv.reader(f,delimiter=',',quotechar='"')
     for row in data:
         nrn += 1
@@ -459,13 +532,13 @@ with open('ActivityLog.csv','rb') as f:
         stpace = row[7]
 
 
-        valid = 1
+        valid = True
         if(stactiv != '' and stactiv != 'Run'):
-            valid = 0
+            valid = False
         if(stsec == ''):
-            valid = 0
+            valid = False
         if(stdate == 'Date'):
-            valid = 0
+            valid = False
 
         if(valid): # this list (allruns) includes runs with only time
             sec = int(stsec)
@@ -473,9 +546,9 @@ with open('ActivityLog.csv','rb') as f:
             allruns.append(run(date, 300, sec))  # nominal pace
 
         if(stdist == ''):
-            valid = 0
+            valid = False
         if(stroute == ''):
-            valid = 0
+            valid = False
 
         if(valid):  # this list (runs) is the best data
             nv += 1
@@ -484,6 +557,9 @@ with open('ActivityLog.csv','rb') as f:
             pacemin = int(secpace)/60
             pacesec = int(secpace - 60*pacemin)
             runs.append(run(parser.parse(stdate),secpace))  # store the overall runs
+            #
+            # break runs down by "3k" and "5k" lengths
+            #
             d = float(stdist)
             if (2.8 < d and d < 4.0):
                 runs3k.append(secpace)
@@ -503,8 +579,8 @@ with open('ActivityLog.csv','rb') as f:
             #print stdate, stroute, "{}:{:02d}".format(pacemin, pacesec)
 
 # add elevation gains to routes
-#print 'Elevation gains:'
-with open('elev_gain.csv','rb') as f:
+#print 'Elevation gains:
+with open('elev_gain.csv','rt') as f:
     data = csv.reader(f,delimiter=',',quotechar='"')
     for row in data:
         if len(row) == 3:
@@ -519,10 +595,10 @@ with open('elev_gain.csv','rb') as f:
                     route.plusgain = eplus
                     route.minusgain = eminus
 
-print '\n\n'
-print nrn , ' runs'
-print nv  , ' valid runs'
-print nrt , ' routes'
+print('\n\n')
+print(nrn , ' runs')
+print(nv  , ' valid runs')
+print(nrt , ' routes')
 
 # sort by number of runs on each route
 
@@ -531,29 +607,33 @@ r2 = sorted(routes,key=lambda x: x.n,reverse=True)
 #print r2
 
 #
-#  Tabular Data Display
+#  Tabular Data Display and main menu
 #
-print '                                                   Pace '
-print '  i     Route                               N     min  avg   max    sd'
-print '--------------------------------------------------------------------------'
+print('                                                   Pace ')
+print('  i     Route                               N     min  avg   max    sd')
+print('--------------------------------------------------------------------------')
 max = 16
 i = 0
 for r in r2:
     if(i > max-1):
         break
     r.avg()
-    print '{:3d} {:40s}{:3d}   {:4s}  {:4s}  {:4s}  {:4.1f}'.format(i,r.name,int(r.n), minsec(r.min_secp), minsec(r.avg_pace), minsec(r.max_secp), r.sd_pace)
+    print('{:3d} {:40s}{:3d}   {:4s}  {:4s}  {:4s}  {:4.1f}'.format(i,r.name,int(r.n), minsec(r.min_secp), minsec(r.avg_pace), minsec(r.max_secp), r.sd_pace))
     i += 1
 
 
 PLOTS = False
-
+#mpl.rcParams.update({'font.size': 22})
+#print (plt.style.available)
+#plt.style.use('ggplot')
+plt.style.use('fivethirtyeight')
+plt.figure(figsize=(8,8),dpi=200)
 ##############################################################
 
-print '\n'    #    Get user input
+print('\n')    #    Get user input
 
 while (True):
-    i = int(input("Select a route to graph: (-1 to quit, 80 = freq, 81 = rate, 99 for global plots) "))
+    i = eval(str(input("Select a route to graph: (-1 to quit, 80 = freq, 81 = rate, 99 for global plots) ")))
     if(i<0):
         quit()
     if(i==80):   #plot pace vs run frequency (runs/wk)
@@ -567,26 +647,30 @@ while (True):
         r3 = sorted(allruns,key=lambda x: x.date, reverse=False)
         plot_run_rate(r3,WINDOW)
         continue
+    
+    if(i==82):   # Search comments for text
+        comment_grep('turn ')
+        continue
 
     if(i==99):
         plot_global_stats(r2, runs)
         continue
 
     if(i+1 > len(r2)):
-        print "Selected Invalid run number: ", i
+        print("Selected Invalid run number: ", i)
         continue
 
     #
     #   Route Histogram
     #
     r = r2[i]    # get the route object
+    l = len(r.times) # times have been converted already to pace-300
+    ymax = np.max([5,(int(l)*0.10/5) * 5]) # auto scale y-axis
 
-    #fig, ax2 = plt.subplot()
-    plt.figure(1)
-    #fig, ax1 = plt.subplots(figsize=(6,6))
+    plt.figure(1,figsize=(8,8),dpi=200)
+    #plt.figure(1)
 
     #total = 0
-    l = len(r.times) # times have been converted already to pace-300
 
     colors = ['green', 'tomato', 'r']
     onecolor = ['green']
@@ -594,71 +678,90 @@ while (True):
     BIG_NEG_FLAG = -1000000
     recent_mean = BIG_NEG_FLAG  # absurd flag value
     # change color for most recent pctile% of runs
+    d0=d1=d2=[]
     if(int(pctile*l) > 1):
         #  NOTE: runs are listed most RECENT first
+        # break the runs up into 1) most recent run 2) most recent 15%, 3) rest
         n1 = int((pctile)*l)  # first 1-p % runs
-        d0 = []
         d0.append(r.times[0])  # most recent
         d1 = (r.times[1:(n1)])  # next most recent runs
         d2 = (r.times[n1:])  # rest
-        #print "size l,d1,d2: ", l, np.size(d1), np.size(d2)
-    # plot the histogram
-        # shift times down so relative to 300sec = 5:00 min
-        d0[0] -= 300
-        for j in range(0, len(d1)):
-            d1[j] -= 300  # 300 seconds
-        for j in range(0, len(d2)):
-            d2[j] -= 300
-        n, bins, patches = plt.hist([d2,d1,d0], 50, normed=0,color=colors,stacked=True,alpha=0.5)
+        n, bins, patches = plt.hist([d2,d1,d0], 50,color=colors,stacked=True,alpha=0.5)
         recent_mean = np.float(np.sum(d1)+np.sum(d0))/(n1)
         #print "Sum: ", np.sum(d1)
-        plt.title(r.name + " (recent runs in RED)")
+        plt.suptitle(r.name + " (recent runs in RED)")
     else: # plain old boring histogram
         d1 = (r.times[:])
-        for j in range(0, len(d1)):  # shift times down so relative to 5:00
-            d1[j] -= 300  # 300 seconds
-        n, bins, patches = plt.hist(d1, 50, normed=0,color=onecolor,alpha=0.5)
+        #for j in range(0, len(d1)):  # shift times down so relative to 5:00
+            #d1[j] -= 300  # 300 seconds
+        n, bins, patches = plt.hist(d1, 50,  color=onecolor,alpha=0.5)
         plt.title(r.name)
-    #plt.xlabel('time (sec)')
-
-    #  make a horizontal bar for mean and += 1 SD
-    xl = [r.avg_pace - r.sd_pace,r.avg_pace - r.sd_pace, r.avg_pace, r.avg_pace, r.avg_pace + r.sd_pace, r.avg_pace + r.sd_pace, r.avg_pace - r.sd_pace, r.avg_pace + r.sd_pace]
-    for j in range(0,len(xl)):
-        xl[j] -= 300   # subtract off 5:00 pace
-    b1 = 6.0
-    tick = 0.25
-    b2 = b1+tick
-    b3 = b2+tick/2
-    b4 = b3+tick
-    b = (b1+b2)/2
-    yl = [ b1,b2,b1,b2,b1,b2,b,b]
-    for i in [0,2,4,6]:
-        x = [xl[i], xl[i+1]]
-        y = [yl[i], yl[i+1]]
-        plt.plot(x,y, linewidth= 2.0, alpha= 1.0,color='blue')
+    plt.xlabel('time (sec)')
+    nruns = len(r.times)
+    
+    plotHbar(r.avg_pace - r.sd_pace,r.avg_pace + r.sd_pace, ymax*0.5)
+    
     # plot a tick mark for mean of most recent runs (if applicable)
     if(recent_mean > BIG_NEG_FLAG):
         x = recent_mean
-        plt.plot([x,x],[b3, b4],linewidth=2.0, color='red')
+        plt.plot([x,x],[ymax*0.45,ymax*0.55],linewidth=2.0, color='red')
 
     # plot the normal distribution
-    y = 100*mlab.normpdf(bins, r.avg_pace-300, r.sd_pace)
+    nd = stats.norm.pdf(bins, r.avg_pace, r.sd_pace)
+    y = 0.75*ymax*nd/np.max(nd)   #auto scale height of normal dist.
     plt.plot(bins, y, 'r')
+    
+    xmin = 260
+    xmax = 320 
+    
+    
+    #
+    #  plot a 'secondary' x-axis for the mm:ss representation 
+    #
+    def sec2mmss(s):
+        return dt.timedelta(seconds=s)
+    #def mmss2sec(td):
+        #return td.total_seconds()
+    
+    ax1 = plt.gca()
+    ax2 = ax1.twiny()
+    #ax2.set_xlim(ax1.get_xlim())
+    mmss_tick_locs = [xmin+ 10*i for i in range(int((xmax-xmin)/10))]
+    mmss_tick_labs = [str(sec2mmss(s))[3:] for s in mmss_tick_locs]
+    ax2.set_xticks(mmss_tick_locs)
+    ax2.set_xticklabels(mmss_tick_labs)
+    ax2.set_xlabel('mm:ss pace per km')
+    ax1.set_ylabel('N runs')
+    ax1.set_xlabel('Pace per km (sec)')        
+    #
+    # set up axis parameters
+    #
+    for axis in [ax1, ax2]:
+        # Show the major grid lines with dark grey lines
+        axis.grid(b=True, which='major', color='#666666', linestyle='-')
 
-    plt.xlim([-40,20])
-    plt.ylim([0, 13])
-    plt.ylabel('N runs')
-    plt.xlabel('Pace per km (sec)')
+        # Show the minor grid lines with very faint and almost transparent grey lines
+        axis.minorticks_on()
+        #plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
+        axis.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
+        
+        axis.set_xlim([xmin,xmax])
+        axis.set_ylim([0, ymax])
 
 
 
 
     ##############################################   Plot Pace vs Time
-    plt.figure(2)
+    plt.figure(2,figsize=(10,6),dpi=200)
     plt.plot(r.dates, r.times)
+    # since data is most recent first, smooth a reversed array:
+    rtimes = list(r.times)   #python3: convert to r.times.copy()
+    rtimes.reverse() # in place
+    revtimes = np.array(rtimes)
     if len(r.times) > 20:
-        sm = smooth(np.asarray(r.times), 15, 'flat')
-        #print "Data is smoothed ", sm.shape
+        sm = np.flip(smooth(revtimes, 15, 'flat'),0) # flip = unreverse to match most-recent-first
+        #fix glitch in last (most recent) pt
+        sm[0] = sm[1] #hack
         plt.plot(r.dates, sm.T)
         plt.title('Pace History with 15 run moving avg.: '+r.name)
     else:
@@ -666,3 +769,5 @@ while (True):
     plt.grid([1,1])
     plt.ylim([250,350])
     plt.show()
+
+    
