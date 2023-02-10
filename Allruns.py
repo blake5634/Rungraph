@@ -241,27 +241,50 @@ def mdo(mdst):
 #    display(Markdown(mdst))
 # for command line:
      print(mdst)
-     
-####      generate a markdown table of output
-######### daily avg stats    
 
-mdo('\n #### Daily Average Table: '+str(reportingtime))
-row += 'last x Days:    |'
-for di in daysintervals: 
-        row += '  {:d}  |'.format(di)
-table = addrow(table,row)
-table += '\n' + tb_head
-row = '| Running Time:  | '
-for di in daysintervals:
-    row += ' {:4.1f}min |'.format( (timethisinterval[di]/60)/di)
-table = addrow(table,row)
-row = '| Distance (km) |'
-for di in daysintervals:
-    row += ' {:3.1f}km |'.format( kmthisinterval[di]/di) 
-table = addrow(table,row)
- 
-mdo(table)
+MARKDOWN = False
+if MARKDOWN:
+    ####      generate a markdown table of output
+    ######### daily avg stats
 
+    mdo('\n #### Daily Average Table: '+str(reportingtime))
+    row += 'last x Days:    |'
+    for di in daysintervals:
+            row += '  {:d}  |'.format(di)
+    table = addrow(table,row)
+    table += '\n' + tb_head
+    row = '| Running Time:  | '
+    for di in daysintervals:
+        row += ' {:4.1f}min |'.format( (timethisinterval[di]/60)/di)
+    table = addrow(table,row)
+    row = '| Distance (km) |'
+    for di in daysintervals:
+        row += ' {:3.1f}km |'.format( kmthisinterval[di]/di)
+    table = addrow(table,row)
+
+    mdo(table)
+
+else: #   Regular ASCII table output
+    table = '\n\n       Daily Average Stats'
+    row = '      '
+    for i in range(1+len(daysintervals)):
+        row += '           |'
+    table = addrow(table,row)
+    row = '| last x Days:   |'
+    for di in daysintervals:
+            row += '    {:5d}  |'.format(di)
+    table = addrow(table,row)
+    #table += '\n' + tb_head
+    row = '| Running Time:  |'
+    for di in daysintervals:
+        row += '  {:5.1f}min |'.format( (timethisinterval[di]/60)/di)
+    table = addrow(table,row)
+    row = '| Distance (km)  |'
+    for di in daysintervals:
+        row += '   {:5.1f}km |'.format( kmthisinterval[di]/di)
+    table = addrow(table,row)
+    table = addrow(table,'\n\n')
+    print (table)
 
 # In[5]:
 
