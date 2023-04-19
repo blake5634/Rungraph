@@ -398,17 +398,13 @@ def plot_run_permo(runs):  # plot #runs and pace per month of the year
     
 plot_run_permo(runs1.allruns)
 
+runs1.allruns[0].parsetemp()
 print("Ending: ",runs1.allruns[0].date, ",")
 print('{:4d} (allruns)'.format(len(runs1.allruns)))
 print('{:4d} (runs)'.format(len(runs1.runs)))
-rr=runs1.runs[0]
-print('most recent record: ',str(rr) )
-
-
-# In[6]:
-
-
-print("Last Allrun: ", runs1.allruns[0])
+runs1.runs[0].parsetemp()
+print('most recent record: ', runs1.runs[0] )
+print("Last Allrun:        ", runs1.allruns[0])
 
 
 # In[ ]:

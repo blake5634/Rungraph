@@ -9,6 +9,7 @@ import datetime as dt
 from   dateutil import parser 
 
 import csv               # file I/O
+import re
 # CLASSES
 
 class run:
@@ -22,10 +23,23 @@ class run:
     #distance
     def dist(self):
         return float(self.dur)/self.pace
+
+    def parsetemp(self):
+        if len(self.comment)>0:  # below is from ChatGPT!!
+            pattern = r'\b(\d+)[°]?([CF])\b'
+            match = re.search(pattern, self.comment)
+            if match:
+                temp = int(match.group(1))
+                unit = match.group(2)
+                if unit == 'C':
+                    temp = temp * 9/5 + 32
+                self.tempDegF =  float(temp)
+            else:
+                self.tempDegF = None
     
     def __repr__(self):
         t = float(self.dur)/60
-        return '{:} {:4.1f}km {:6.1f}sec/km {:8.1f}min {:30.30} {:6.1f}F'.format(str(self.date)[0:10],self.dist(),self.pace,t,self.comment,self.tempDegF )
+        return '{:} {:4.1f}km {:6.1f}sec/km {:8.1f}min {:30.30}     {:6.1f}F'.format(str(self.date)[0:10],self.dist(),self.pace,t,self.comment,self.tempDegF )
         
     
 class route:
