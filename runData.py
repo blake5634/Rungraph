@@ -136,7 +136,7 @@ class runLists:
                         t = int(stsec)
                         d = t/pace
                         
-                    if stdist != '' and stsec != '':   # if there is NOT time and dist 
+                    if stdist != '' and stsec == '':   # if there is dist and  NOT time
                         d = float(stdist)
                         t = int(d*pace)
                     
