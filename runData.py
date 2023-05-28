@@ -98,6 +98,9 @@ class runLists:
 
         # DATASET READER
     def reader(self):
+        type1 = 0
+        type2 = 0
+        type3 = 0
         with open('ActivityLog.csv','rt') as f:
             data = csv.reader(f,delimiter=',',quotechar='"')
             for row in data:
@@ -128,15 +131,18 @@ class runLists:
                     pace = 300
                     
                     if stdist != '' and stsec != '':   # if there is BOTH time and dist
+                        type1 += 1
                         d = float(stdist)
                         t = int(stsec)
                         pace = t/d
 
                     if stdist == '' and stsec != '':   # if there is time and NOT dist
+                        type2 += 1
                         t = int(stsec)
                         d = t/pace
                         
                     if stdist != '' and stsec == '':   # if there is dist and  NOT time
+                        type3 += 1
                         d = float(stdist)
                         t = int(d*pace)
                     
@@ -176,6 +182,7 @@ class runLists:
 
                     self.routed[stroute].add(secpace,stdate)   # count this run
 
+        print('read in {:} total runs.  [{:}, {:}, {:}]'.format(len(self.allruns),type1,type2,type3))
 
 ##  Functions:
 
