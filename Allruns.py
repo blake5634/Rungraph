@@ -399,6 +399,9 @@ def plot_run_permo(runs):  # plot #runs and pace per month of the year
 plot_run_permo(runs1.allruns)
 
 runs1.allruns[0].parsetemp()
+runs1.allruns[0].parsetime()
+runs1.runs[0].parsetemp()
+runs1.runs[0].parsetime()
 print("Ending: ",runs1.allruns[0].date, ",")
 print('{:4d} (allruns)'.format(len(runs1.allruns)))
 print('{:4d} (runs)'.format(len(runs1.runs)))

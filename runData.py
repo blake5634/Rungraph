@@ -19,6 +19,7 @@ class run:
         self.dur = float(dur)
         self.comment = cmt
         self.tempDegF = 0.00
+        self.timeOfDay = None
         
     #distance
     def dist(self):
@@ -36,10 +37,21 @@ class run:
                 self.tempDegF =  float(temp)
             else:
                 self.tempDegF = None
-    
+    def parsetime(self):
+        if len(self.comment)>0:
+            #pattern = r'[0-9]{1,2}:[0-9]{2}\s*(am|pm|AM|PM\s*)'
+            pattern = r'\b([1-9]|1[0-2])(:|)(\d{2})?\s?(am|pm|AM|PM)\b'  # :MM is optional
+            match = re.search(pattern, self.comment)
+            if match:
+                time = match.group(0)
+                print('I parsed time: ', self.comment, ': --> ', match)
+                self.timeOfDay =  time.strip()
+            else:
+                self.timeOfDay = None
+
     def __repr__(self):
         t = float(self.dur)/60
-        return '{:} {:4.1f}km {:6.1f}sec/km {:8.1f}min {:30.30}     {:6.1f}F'.format(str(self.date)[0:10],self.dist(),self.pace,t,self.comment,self.tempDegF )
+        return '{:} {:4.1f}km {:6.1f}sec/km {:8.1f}min {:30.30}     {:6.1f}F     {:}'.format(str(self.date)[0:10],self.dist(),self.pace,t,self.comment,self.tempDegF, self.timeOfDay)
         
     
 class route:

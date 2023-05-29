@@ -150,7 +150,11 @@ temps = []
 times = []
 anlonly = re.compile('[^0-9a-zA-Z]*')
 atemperature = re.compile(r'[0-9]+\s*[fF]')
+# ChatGPT:  doesn't work!!:
+#atime = re.compile(r'\b(0?[1-9]|1[0-2]):[0-5][0-9]\s?(?:AM|PM|am|pm)\b')
 atime = re.compile(r'[0-9]{1,2}:[0-9]{2}\s*(am|pm|\s*)')
+atime = re.compile(r'\b([1-9]|1[0-2])(:|)(\d{2})?\s?(am|pm|AM|PM)\b')  # :MM is optional
+
 hascomma = re.compile(r'[0-9]+[fF]\S')
 
 for i,rctd in enumerate(rcoms):
