@@ -2,9 +2,9 @@
 # coding: utf-8
 
 # # Analytics for "valid" runs
-# 
+#
 # ### Imports
-# 
+#
 
 # In[6]:
 
@@ -14,7 +14,7 @@ import math as m
 import operator          # for sorting list of class instances
 from scipy import stats
 import datetime as dt
-from   dateutil import parser 
+from   dateutil import parser
 
 
 import matplotlib.mlab as mlab
@@ -24,7 +24,7 @@ import matplotlib as mpl
 from matplotlib.colors import BoundaryNorm
 from matplotlib.ticker import MaxNLocator
 
-from IPython.display import display, Markdown, Latex
+# from IPython.display import display, Markdown, Latex
 
 import runData as rd
 
@@ -32,7 +32,7 @@ import runData as rd
 # ### Classes
 
 # ### Data Reading and Validation
-# 
+#
 
 # In[7]:
 
@@ -70,13 +70,13 @@ for r in routed.keys():
     rt = routed[r]
     if rt.n > 5:
         poproutes.append(rt)
-        
+
 poproutes.sort(key=operator.attrgetter('n'),reverse=True)
 i=0
 for rt in poproutes:
     print ('{:3} {:4} {}'.format(i, rt.n, rt.name))
     i+= 1
-    
+
 sr = int(input('Select a route: '))
 print ('You selected: {}'.format(poproutes[sr].name))
 
@@ -86,7 +86,7 @@ print ('You selected: {}'.format(poproutes[sr].name))
 # In[9]:
 
 
-#print('got here...')    
+#print('got here...')
 r = poproutes[sr]
 r.avg() # compute some averages
 l = len(r.times) # times have been converted already to pace-300
@@ -94,7 +94,7 @@ ymax = np.max([5,(int(l)*0.10/5) * 5]) # auto scale y-axis
 
 #plt.figure(1,figsize=(8,8),dpi=200)
 plt.figure(1,figsize=(9,7))
- 
+
 colors = ['green', 'tomato', 'r']
 onecolor = ['green']
 pctile = 0.15 # this fraction of most recent runs will be in red
@@ -151,11 +151,11 @@ y = 0.75*ymax*nd/np.max(nd)   #auto scale height of normal dist.
 plt.plot(bins, y, 'r')
 
 xmin = 260
-xmax = 320 
+xmax = 320
 
 
 #
-#  plot a 'secondary' x-axis for the mm:ss representation 
+#  plot a 'secondary' x-axis for the mm:ss representation
 #
 def sec2mmss(s):
     return dt.timedelta(seconds=s)
@@ -171,18 +171,18 @@ ax2.set_xticks(mmss_tick_locs)
 ax2.set_xticklabels(mmss_tick_labs)
 ax2.set_xlabel('mm:ss pace per km')
 ax1.set_ylabel('N runs')
-ax1.set_xlabel('Pace per km (sec)')        
+ax1.set_xlabel('Pace per km (sec)')
 #
 # set up axis parameters
 #
 for axis in [ax1, ax2]:
     # Show the major grid lines with dark grey lines
-    axis.grid(b=True, which='major', color='#666666', linestyle='-')
+    axis.grid(visible=True, which='major', color='#666666', linestyle='-')
 
     # Show the minor grid lines with very faint and almost transparent grey lines
     axis.minorticks_on()
-    #plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
-    axis.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
+    #plt.grid(visible=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
+    axis.grid(visible=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
 
     axis.set_xlim([xmin,xmax])
     axis.set_ylim([0, 1.25*ymax])
@@ -204,13 +204,13 @@ rtimes.reverse() # in place
 revtimes = np.array(rtimes)
 Nsm = 15   # of smoothing points
 if Nsm%2 != 1:
-    print('Smoothing windown must be odd! (fixing: Nsm={:})'.format(Nsm))
+    print('Smoothing window must be odd! (fixing: Nsm={:})'.format(Nsm))
     Nsm += 1
 if len(rtimes) > 2*Nsm:
     sm = np.flip(rd.smooth(revtimes, Nsm, 'flat'),0) # flip = unreverse to match most-recent-first
-    #fix glitch in last (most recent) pt 
+    #fix glitch in last (most recent) pt
     # try to shift smoothed for better match
-    sm[0] = sm[1]  # HACK ??  
+    sm[0] = sm[1]  # HACK ??
     shift = int((Nsm-1)/2)
     prefix = np.array([sm[0]]*shift)  #extend most recent complete value to present
     sm1 = np.concatenate((prefix,(sm.copy()[:-shift])))
@@ -224,8 +224,8 @@ plt.ylim([250,350])
 ###  add a COVID BAR
 cbY = 315
 cbXmin=parser.parse('1-mar-2020').date()
-cbXmax=parser.parse('1-mar-2021')
-cbXmax=dt.date.today()  # Until further notice!!!
+cbXmax=parser.parse('1-mar-2023').date()
+# cbXmax=dt.date.today()  # Until further notice!!!
 a = [cbXmin, cbXmax]
 b = [cbY,cbY]
 plt.plot(a,b,color='r',linestyle='--')  # covid-19 bar
@@ -240,7 +240,7 @@ dmax = dt.date.today()
 dmin = dmax - dt.timedelta(days=365)
 plt.figure(3,figsize=(10,3))
 plt.title('Pace History in last 12 months: '+r.name)
-plt.plot(r.dates,r.times) 
+plt.plot(r.dates,r.times)
 plt.plot(a,b,color='r',linestyle='--')  # covid-19 bar
 xt = max(dmin,txt_X)+dt.timedelta(days=30)
 plt.gca().text(xt, cbY*1.025, "Covid19",color='r',fontsize=14)

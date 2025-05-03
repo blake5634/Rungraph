@@ -6,7 +6,7 @@
 import math as m
 import numpy as np       # operations on numerical arrays
 import datetime as dt
-from   dateutil import parser 
+from   dateutil import parser
 
 import csv               # file I/O
 import re
@@ -20,7 +20,7 @@ class run:
         self.comment = cmt
         self.tempDegF = 0.00
         self.timeOfDay = None
-        
+
     #distance
     def dist(self):
         return float(self.dur)/self.pace
@@ -52,8 +52,8 @@ class run:
     def __repr__(self):
         t = float(self.dur)/60
         return '{:} {:4.1f}km {:6.1f}sec/km {:8.1f}min {:30.30}     {:6.1f}F     {:}'.format(str(self.date)[0:10],self.dist(),self.pace,t,self.comment,self.tempDegF, self.timeOfDay)
-        
-    
+
+
 class route:
     def __init__(self,string,rnum):
         self.hmin = 4*60 + 30
@@ -95,7 +95,7 @@ class route:
             (self.n*self.tot_secp2-self.tot_secp*self.tot_secp) /
             (self.n*(self.n-1))
             )
-        
+
 class runLists:
     def __init__(self):
         self.nruns = 0
@@ -128,20 +128,19 @@ class runLists:
                 stdist = row[6].strip()
                 stpace = row[7].strip()
                 stcomnt = row[10].strip()
-                
+
                 valid = True
                 if(stactiv != '' and stactiv != 'Run'):
                     valid = False
                 if(stdate == 'Date'):  # e.g. header
                     valid = False
-
                 if stsec == '' and stdist == '': # we know NOTHING!
                     valid == False
-                    
+
                 if(valid): # this list (allruns) includes runs with only time
                     # or only distance
                     pace = 300
-                    
+
                     if stdist != '' and stsec != '':   # if there is BOTH time and dist
                         type1 += 1
                         d = float(stdist)
@@ -152,12 +151,12 @@ class runLists:
                         type2 += 1
                         t = int(stsec)
                         d = t/pace
-                        
+
                     if stdist != '' and stsec == '':   # if there is dist and  NOT time
                         type3 += 1
                         d = float(stdist)
                         t = int(d*pace)
-                    
+
                     date = parser.parse(stdate)
                     self.allruns.append(run(date, pace, t, stcomnt))  # nominal pace
 
@@ -207,7 +206,7 @@ def seconds(s):
 def minsec(s):
     return '{:d}:{:02d}'.format(minutes(s),seconds(s))
 
-    
+
     #
     #  make a horizontal bar for mean and += 1 SD
     #
@@ -218,7 +217,7 @@ def plotHbar(x1,x2,y,plotobj):
     #for j in range(0,len(xl)):
         #xl[j] -= 300   # subtract off 5:00 pace
         # partway up the Y-axis
-    T = y/10.0  # length of vertical 
+    T = y/10.0  # length of vertical
     yl = [y-T/2,y+T/2,y,   y, y+0.55*T,y-0.55*T,y ,  y  ,y-T/2,y+T/2]
 #    for i in [0,2,4,6]:
 #        x = [xl[i], xl[i+1]]
