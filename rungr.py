@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import numpy as np       # operations on numerical arrays
 import csv               # file I/O
+import json
 import math as m
 import operator          # for sorting list of class instances
 from scipy import stats
@@ -87,20 +88,21 @@ def plot_run_rate(runs, N):  # plot minutes per week vs time
         startdate -= dt.timedelta(days=1)
     nextdate = startdate + dt.timedelta(days=7)
 
-    n=0
     wk_time = 0
     dates = []
     times = []
+    week_start = startdate
     for r in runs:
-        if r.date < nextdate:
-            wk_time += r.dur  # add duration of run (sec)
-        else:
-            n += 1
-            #print 'Week: ', n, nextdate, wk_time
-            dates.append(n)
+        while r.date >= nextdate:   # handle gaps: advance one week at a time
+            dates.append(week_start)
             times.append(wk_time/60)
             wk_time = 0
-            nextdate = nextdate + dt.timedelta(days=7)
+            week_start = nextdate
+            nextdate += dt.timedelta(days=7)
+        wk_time += r.dur  # add duration of run (sec)
+
+    plt.gca().xaxis.set_major_formatter(mpl.dates.DateFormatter('%m/%y'))
+    plt.gca().xaxis.set_major_locator(mpl.dates.AutoDateLocator(minticks=4, maxticks=8))
     plt.plot(dates, times)
 
 # since data is most recent first, smooth a reversed array:
@@ -109,14 +111,14 @@ def plot_run_rate(runs, N):  # plot minutes per week vs time
     revtimes = np.array(rtimes)
     if len(times) > 20:
         sm = np.flip(smooth(revtimes, 15, 'flat'),0)  # flip = unreverse to match most-recent-first
-        #print "Data is smoothed ", sm.shape 
         #fix glitch in last (most recent) pt
         sm[0] = sm[1] #hack
         plt.plot(dates, sm.T)
         plt.title('Weekly Run Minutes with moving avg.')
     else:
         plt.title('Weekly Run Minutes')
-    plt.xlabel('Week number ')
+    plt.gcf().autofmt_xdate()
+    plt.xlabel('Date')
     plt.ylabel('Weekly Running Time (Min)')
     plt.grid(True)
     plt.ylim([0,100])
@@ -185,7 +187,7 @@ def plot_freq(runs,N):
     for i in range(0,len(times)):
         r = -1 + int((times[i] - tmin)/(tmax-tmin) * nbins)
         c = -1 + int((freqs[i] - fmin)/(fmax-fmin) * nbins)
-        if (r < nbins and c < nbins):
+        if (0 <= r < nbins and 0 <= c < nbins):
             map[r,c] += 1
 
     [nr,nc] = map.shape
@@ -232,16 +234,17 @@ def plot_freq(runs,N):
 #
 
 
-def plot_global_stats(r_in, allruns):
+def plot_global_stats(r_in, allruns, cutoff_date=None):
+    r_in = [r.filtered(cutoff_date) for r in r_in]
+    r_in = [r for r in r_in if r.n > 0]
+    allruns = [r for r in allruns if cutoff_date is None or r.date >= cutoff_date]
+
     data = []
     topRnames = []
     Nruns = []
     rElevs = []
     #make data into an array
     i = 0
-    #for r in r_in:
-        #for j in range(0,len(r.times)):
-            #r.times[j] -= 300  # subtract 5 min from all stats
     for r in r_in:    # eg. a list of routes
         i += 1
         dtmp = []
@@ -253,7 +256,7 @@ def plot_global_stats(r_in, allruns):
         echange = r.plusgain + -1*r.minusgain  # abs value
         rElevs.append(echange)
         Nruns.append('n = ' + str(r.n))
-        if i >= max:
+        if i >= NROUTES:
             break
 
     PLOTS=True
@@ -278,9 +281,9 @@ def plot_global_stats(r_in, allruns):
         plt.xlabel('sec/km (relative to 5:00)')
 
         #  add the names of the routes to left side of plot
-        plt.yticks(list(range(1,max+1)), topRnames)
+        plt.yticks(list(range(1,len(topRnames)+1)), topRnames)
 
-        for j in range(0,max):
+        for j in range(0,len(topRnames)):
             ax1.text(47, j+1 , Nruns[j], size='small')
         ##   add n figures at right edge
 
@@ -295,25 +298,26 @@ def plot_global_stats(r_in, allruns):
         #  graph routes as boxplots according to elevation gain
         #
         # now sort and reparse according to route elevation gain (up + -dn)
-        r3 = sorted(r_in,key=lambda x: x.plusgain , reverse=True)
-        data = []
+        r3 = sorted(r_in,key=lambda x: x.plusgain , reverse=False)
         topRnames = []
         Nruns = []
         rElevs = []
-        #make data into an array
+        box_data = []
+        box_positions = []
+        point_data = []   # list of (y_pos, times) for n < 3
         i = 0
-        NMIN = 10     # only plot if run at least NMIN times
         for r in r3:
-            if(r.n >= NMIN):
+            if r.n >= 1:
                 i += 1
-
-                data.append(r.times)
-                #topRnames.append(str(r.plusgain))
                 topRnames.append(r.name)
-                echange = r.plusgain   # abs value
-                rElevs.append(echange)
+                rElevs.append(r.plusgain)
                 Nruns.append('n = ' + str(r.n))
-                if i >= max:
+                if r.n >= 3:
+                    box_data.append(r.times)
+                    box_positions.append(i)
+                else:
+                    point_data.append((i, r.times))
+                if i >= NROUTES:
                     break
         fig, ax1 = plt.subplots(num=2, figsize=(14,6))
         plt.subplots_adjust(left=.25)
@@ -321,28 +325,24 @@ def plot_global_stats(r_in, allruns):
         rect.set_facecolor('white')
         ax1.xaxis.grid(True,linestyle='-', which='major', color='lightgrey',alpha=0.5)
 
-        # make boxplots for all the routes
-        bp = plt.boxplot(data, notch=True,vert=False ,patch_artist=True)
-        for b in bp['boxes']:
-            b.set_facecolor('lightblue')
+        # boxplots for routes with enough data
+        if box_data:
+            bp = plt.boxplot(box_data, notch=True, vert=False, patch_artist=True, positions=box_positions)
+            for b in bp['boxes']:
+                b.set_facecolor('lightblue')
+        # scatter points for routes with 1-2 runs
+        for y, times in point_data:
+            ax1.plot(times, [y] * len(times), 'o', color='steelblue', markersize=6)
 
         plt.title('Route Pace vs. Elevation Gain')
         #plt.ylabel('Route')
         plt.xlabel('sec/km')
 
-        #  add the names of the routes to left side of plot
-        #plt.yticks(range(1,max+1), topRnames)
-        #  add the elevations of each route on left side of plot
-        estrings = []
-        for re in rElevs:
-            estrings.append('{:6d} '.format(int(re)))
-        for j in range(0,len(estrings)):
-            t = estrings[j]
-            estrings[j] = topRnames[j] + t.ljust(5)
-        plt.yticks(list(range(1,len(estrings)+1)), estrings)
+        plt.yticks(list(range(1,len(topRnames)+1)), topRnames)
+        ax1.set_ylim([0.5, len(topRnames) + 0.5])
 
         # add the run count to the right side of the plot
-        for j in range(0,len(estrings)):
+        for j in range(0,len(topRnames)):
             plt.text(350, j+1 , Nruns[j], size='small')
 
         plt.show()
@@ -365,8 +365,8 @@ def plot_global_stats(r_in, allruns):
         ##############################################################
         fig, ax2 = plt.subplots(num=4)   #  boxplots of 3k vs 5k runs
         data = []
-        data.append(runs3k)
-        data.append(runs5k)
+        data.append([r.pace for r in runs3k if cutoff_date is None or r.date >= cutoff_date])
+        data.append([r.pace for r in runs5k if cutoff_date is None or r.date >= cutoff_date])
         bp = plt.boxplot(data, notch=True, vert=True)
         plt.xlabel(' Distance (km) ')
         plt.ylabel('pace (sec)')
@@ -466,29 +466,44 @@ class route:
         self.plusgain = 0   # elevation gains
         self.minusgain = 0
 
-    def add(self, sec, date):  # add a run record to a route
+    def add_raw(self, sec, date_obj):
         self.n += 1
-        #print 't = ', int(sec), minsec(sec)
-        #accumulate histogram of paces
-        indx = int(sec)-self.hmin
+        indx = int(sec) - self.hmin
         self.times.append(sec)
-        self.dates.append(dt.datetime.strptime(date,'%Y-%m-%d'))
-        if(indx > 0 and indx < (len(self.hist)-1)):
-            self.hist[int(sec)-self.hmin] += 1
-        # build mean and SD values
+        self.dates.append(date_obj)
+        if 0 < indx < len(self.hist) - 1:
+            self.hist[indx] += 1
         self.tot_secp += sec
-        self.tot_secp2 += sec*sec
-        if (sec > self.max_secp):
-            self.max_secp = sec
-        if (sec < self.min_secp):
-            self.min_secp = sec
+        self.tot_secp2 += sec * sec
+        self.max_secp = max(self.max_secp, sec)
+        self.min_secp = min(self.min_secp, sec)
+
+    def add(self, sec, date):  # add a run record to a route
+        self.add_raw(sec, dt.datetime.strptime(date, '%Y-%m-%d'))
+
+    def filtered(self, cutoff_date):
+        if cutoff_date is None:
+            return self
+        r = route(self.name, self.rnum)
+        r.distance = self.distance
+        r.plusgain = self.plusgain
+        r.minusgain = self.minusgain
+        for sec, date in zip(self.times, self.dates):
+            if date >= cutoff_date:
+                r.add_raw(sec, date)
+        if r.n > 0:
+            r.avg()
+        return r
 
     def avg(self):    # compute mean and sd of route
-        self.avg_pace = self.tot_secp/self.n
-        self.sd_pace  = m.sqrt(
-            (self.n*self.tot_secp2-self.tot_secp*self.tot_secp) /
-            (self.n*(self.n-1))
+        self.avg_pace = self.tot_secp / self.n
+        if self.n > 1:
+            self.sd_pace = m.sqrt(
+                (self.n*self.tot_secp2 - self.tot_secp*self.tot_secp) /
+                (self.n*(self.n-1))
             )
+        else:
+            self.sd_pace = 0
 
 
 def minutes(sec):
@@ -500,7 +515,11 @@ def seconds(s):
 def minsec(s):
     return '{:d}:{:02d}'.format(minutes(s),seconds(s))
 
-
+def cutoff_date_from_settings(settings):
+    mos = settings.get('time_window_months')
+    if not mos:
+        return None
+    return dt.datetime.now() - dt.timedelta(days=30.44 * mos)
 
 
 ##########################################################################333
@@ -562,9 +581,9 @@ with open('ActivityLog.csv','rt') as f:
             #
             d = float(stdist)
             if (2.8 < d and d < 4.0):
-                runs3k.append(secpace)
+                runs3k.append(run(parser.parse(stdate), secpace))
             if (4.0 < d and d < 7.5):
-                runs5k.append(secpace)
+                runs5k.append(run(parser.parse(stdate), secpace))
 
             if not (stroute in rd):
                 nrt += 1
@@ -583,17 +602,17 @@ with open('ActivityLog.csv','rt') as f:
 with open('elev_gain.csv','rt') as f:
     data = csv.reader(f,delimiter=',',quotechar='"')
     for row in data:
-        if len(row) == 3:
+        if len(row) == 3 and 'xxxx' not in row[1] and 'xxxx' not in row[2]:
             #print row
-            rn = row[0]
-            eplus  = int(row[1])
-            eminus = int(row[2])
+            rn = row[0].strip()
+            eplus  = int(row[1].replace('+',''))
+            eminus = int(row[2].replace('-','').replace('+',''))
             found = False
-            for route in routes:
-                if route.rnum == rn:
+            for rt in routes:
+                if rt.rnum == rn:
                     found = True
-                    route.plusgain = eplus
-                    route.minusgain = eminus
+                    rt.plusgain = eplus
+                    rt.minusgain = eminus
 
 print('\n\n')
 print(nrn , ' runs')
@@ -612,10 +631,10 @@ r2 = sorted(routes,key=lambda x: x.n,reverse=True)
 print('                                                   Pace ')
 print('  i     Route                               N     min  avg   max    sd')
 print('--------------------------------------------------------------------------')
-max = 16
+NROUTES = 16
 i = 0
 for r in r2:
-    if(i > max-1):
+    if(i > NROUTES-1):
         break
     r.avg()
     print('{:3d} {:40s}{:3d}   {:4s}  {:4s}  {:4s}  {:4.1f}'.format(i,r.name,int(r.n), minsec(r.min_secp), minsec(r.avg_pace), minsec(r.max_secp), r.sd_pace))
@@ -627,33 +646,69 @@ PLOTS = False
 #print (plt.style.available)
 #plt.style.use('ggplot')
 plt.style.use('fivethirtyeight')
-plt.figure(figsize=(8,8),dpi=200)
 ##############################################################
+
+SETTINGS_FILE = 'rungr_settings.json'
+SETTINGS_DEFAULTS = {'time_window_months': None}
+
+def load_settings():
+    try:
+        with open(SETTINGS_FILE, 'r') as f:
+            data = json.load(f)
+        return {**SETTINGS_DEFAULTS, **data}
+    except (FileNotFoundError, json.JSONDecodeError):
+        return dict(SETTINGS_DEFAULTS)
+
+def save_settings(s):
+    with open(SETTINGS_FILE, 'w') as f:
+        json.dump(s, f, indent=2)
+
+settings = load_settings()
 
 print('\n')    #    Get user input
 
 while (True):
-    i = eval(str(input("Select a route to graph: (-1 to quit, 80 = freq, 81 = rate, 99 for global plots) ")))
+    i = eval(str(input("Select a route to graph: (-1 to quit, 80 = freq, 81 = rate, 98 = settings, 99 for global plots) ")))
     if(i<0):
         quit()
     if(i==80):   #plot pace vs run frequency (runs/wk)
         WINDOW = 10  # runs
-        r3 = sorted(runs,key=lambda x: x.date, reverse=False)
+        cutoff = cutoff_date_from_settings(settings)
+        r3 = sorted([r for r in runs if not cutoff or r.date >= cutoff], key=lambda x: x.date, reverse=False)
         plot_freq(r3,WINDOW)
         continue
 
     if(i==81):   #plot minutes of running per week.
         WINDOW = 10  # runs
-        r3 = sorted(allruns,key=lambda x: x.date, reverse=False)
+        cutoff = cutoff_date_from_settings(settings)
+        r3 = sorted([r for r in allruns if not cutoff or r.date >= cutoff], key=lambda x: x.date, reverse=False)
         plot_run_rate(r3,WINDOW)
         continue
-    
+
     if(i==82):   # Search comments for text
         comment_grep('turn ')
         continue
 
+    if(i==98):   # Settings
+        mos = settings['time_window_months']
+        print("Settings:")
+        print("  [1] Time Window: {}".format('All time' if not mos else '{} months'.format(mos)))
+        choice = input("  Enter setting number to change (Enter to cancel): ").strip()
+        if choice == '1':
+            val = input("  Months (0 = all time): ").strip()
+            try:
+                mos = int(val)
+                settings['time_window_months'] = None if mos == 0 else mos
+                save_settings(settings)
+                label = 'All time' if not settings['time_window_months'] else '{} months'.format(settings['time_window_months'])
+                print("  Time window set to: {}".format(label))
+            except ValueError:
+                print("  Invalid input, setting unchanged.")
+        continue
+
     if(i==99):
-        plot_global_stats(r2, runs)
+        cutoff = cutoff_date_from_settings(settings)
+        plot_global_stats(r2, runs, cutoff)
         continue
 
     if(i+1 > len(r2)):
@@ -663,8 +718,12 @@ while (True):
     #
     #   Route Histogram
     #
-    r = r2[i]    # get the route object
-    l = len(r.times) # times have been converted already to pace-300
+    cutoff = cutoff_date_from_settings(settings)
+    r = r2[i].filtered(cutoff)
+    if r.n == 0:
+        print("No runs for '{}' in the selected time window.".format(r2[i].name))
+        continue
+    l = len(r.times)
     ymax = np.max([5,(int(l)*0.10/5) * 5]) # auto scale y-axis
 
     plt.figure(1,figsize=(8,8),dpi=200)
