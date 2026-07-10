@@ -118,7 +118,7 @@ def plot_run_rate(runs, N):  # plot minutes per week vs time
         plt.title('Weekly Run Minutes')
     plt.xlabel('Week number ')
     plt.ylabel('Weekly Running Time (Min)')
-    plt.grid([1,1])
+    plt.grid(True)
     plt.ylim([0,100])
     plt.show()
 
@@ -262,7 +262,7 @@ def plot_global_stats(r_in, allruns):
         #  graph all the data as boxplots
         #
         #plt.figure(10)    #  boxplot for each route
-        fig, ax1 = plt.subplots(figsize=(14,6))
+        fig, ax1 = plt.subplots(num=1, figsize=(14,6))
         plt.subplots_adjust(left=.25)
         rect = fig.patch
         rect.set_facecolor('white')
@@ -315,7 +315,7 @@ def plot_global_stats(r_in, allruns):
                 Nruns.append('n = ' + str(r.n))
                 if i >= max:
                     break
-        fig, ax1 = plt.subplots(figsize=(14,6))
+        fig, ax1 = plt.subplots(num=2, figsize=(14,6))
         plt.subplots_adjust(left=.25)
         rect = fig.patch
         rect.set_facecolor('white')
@@ -339,7 +339,7 @@ def plot_global_stats(r_in, allruns):
         for j in range(0,len(estrings)):
             t = estrings[j]
             estrings[j] = topRnames[j] + t.ljust(5)
-        plt.yticks(list(range(1,max-1)), estrings)
+        plt.yticks(list(range(1,len(estrings)+1)), estrings)
 
         # add the run count to the right side of the plot
         for j in range(0,len(estrings)):
@@ -353,7 +353,7 @@ def plot_global_stats(r_in, allruns):
 
     if(PLOTS):
         ##############################################################
-        plt.figure(12)    # histogram of ALL run paces
+        plt.figure(3)    # histogram of ALL run paces
         paces = []
         for r in allruns:
             paces.append(r.pace)
@@ -363,7 +363,7 @@ def plot_global_stats(r_in, allruns):
         plt.title('All Runs')
 
         ##############################################################
-        fig, ax2 = plt.subplots()   #  boxplots of 3k vs 5k runs
+        fig, ax2 = plt.subplots(num=4)   #  boxplots of 3k vs 5k runs
         data = []
         data.append(runs3k)
         data.append(runs5k)
@@ -687,7 +687,7 @@ while (True):
         d1 = (r.times[1:(n1)])  # next most recent runs
         d2 = (r.times[n1:])  # rest
         n, bins, patches = plt.hist([d2,d1,d0], 50,color=colors,stacked=True,alpha=0.5)
-        recent_mean = np.float(np.sum(d1)+np.sum(d0))/(n1)
+        recent_mean = float(np.sum(d1)+np.sum(d0))/(n1)
         #print "Sum: ", np.sum(d1)
         plt.suptitle(r.name + " (recent runs in RED)")
     else: # plain old boring histogram
@@ -738,12 +738,12 @@ while (True):
     #
     for axis in [ax1, ax2]:
         # Show the major grid lines with dark grey lines
-        axis.grid(b=True, which='major', color='#666666', linestyle='-')
+        axis.grid(visible=True, which='major', color='#666666', linestyle='-')
 
         # Show the minor grid lines with very faint and almost transparent grey lines
         axis.minorticks_on()
-        #plt.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
-        axis.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
+        #plt.grid(visible=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
+        axis.grid(visible=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
         
         axis.set_xlim([xmin,xmax])
         axis.set_ylim([0, ymax])
@@ -766,7 +766,7 @@ while (True):
         plt.title('Pace History with 15 run moving avg.: '+r.name)
     else:
         plt.title('Pace History: '+ r.name)
-    plt.grid([1,1])
+    plt.grid(True)
     plt.ylim([250,350])
     plt.show()
 
